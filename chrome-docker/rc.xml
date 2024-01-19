@@ -1,0 +1,10 @@
+<openbox_config>
+    <applications>
+        <!-- Chrome-specific settings -->
+        <application class="Google-chrome">
+            <decor>no</decor> 
+            <maximized>true</maximized> 
+            <override_redirect>yes</override_redirect>
+        </application>
+    </applications>
+</openbox_config>
