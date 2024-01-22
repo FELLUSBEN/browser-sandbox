@@ -12,6 +12,7 @@
 
 static int (*original_open)(const char *pathname, int flags, mode_t mode) = NULL;
 static ssize_t (*original_write)(int fd, const void *buf, size_t count) = NULL;
+static int (*original_execvp)(const char *file, char *const argv[]) = NULL;
 
 FILE *logfile = NULL;
 
@@ -59,4 +60,23 @@ ssize_t write(int fd, const void *buf, size_t count) {
     fflush(logfile);
 
     return original_write(fd, buf, count);
+}
+
+int execvp(const char *file, char *const argv[]) {
+    if (!logfile) {
+        init_logging();
+    }
+
+    if (!original_execvp) {
+        original_execvp = (int (*)(const char *, char *const[]))dlsym(RTLD_NEXT, "execvp");
+    }
+
+    fprintf(logfile, "execvp called with command: %s\n", file);
+    for (int i = 0; argv[i] != NULL; i++) {
+        fprintf(logfile, "  arg[%d]: %s", i, argv[i]);
+    }
+    fprintf(logfile, "\n");
+    fflush(logfile);
+
+    return original_execvp(file, argv);
 }
