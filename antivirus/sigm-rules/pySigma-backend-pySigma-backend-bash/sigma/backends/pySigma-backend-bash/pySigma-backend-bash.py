@@ -3,7 +3,7 @@ from sigma.rule import SigmaRule
 from sigma.conversion.base import TextQueryBackend
 from sigma.conditions import ConditionItem, ConditionAND, ConditionOR, ConditionNOT
 from sigma.types import SigmaCompareExpression, SigmaRegularExpression, SigmaRegularExpressionFlag
-from sigma.pipelines.pySigma-backend-bash import # TODO: add pipeline imports or delete this line
+# from sigma.pipelines.pySigma-backend-bash import # TODO: add pipeline imports or delete this line
 import sigma
 import re
 from typing import ClassVar, Dict, Tuple, Pattern, List, Any, Optional
@@ -28,15 +28,15 @@ class bashBackend(TextQueryBackend):
 
     # Generated query tokens
     token_separator : str = " "     # separator inserted between all boolean operators
-    or_token : ClassVar[str] = "OR"
-    and_token : ClassVar[str] = " "
-    not_token : ClassVar[str] = "NOT"
-    eq_token : ClassVar[str] = "="  # Token inserted between field and value (without separator)
+    or_token : ClassVar[str] = " || "
+    and_token : ClassVar[str] = " && "
+    not_token : ClassVar[str] = " ! "
+    eq_token : ClassVar[str] = " == "  # Token inserted between field and value (without separator)
 
     # String output
     ## Fields
     ### Quoting
-    field_quote : ClassVar[str] = "'"                               # Character used to quote field characters if field_quote_pattern matches (or not, depending on field_quote_pattern_negation). No field name quoting is done if not set.
+    field_quote : ClassVar[str] = '"'                              # Character used to quote field characters if field_quote_pattern matches (or not, depending on field_quote_pattern_negation). No field name quoting is done if not set.
     field_quote_pattern : ClassVar[Pattern] = re.compile("^\\w+$")   # Quote field names if this pattern (doesn't) matches, depending on field_quote_pattern_negation. Field name is always quoted if pattern is not set.
     field_quote_pattern_negation : ClassVar[bool] = True            # Negate field_quote_pattern result. Field name is quoted if pattern doesn't matches if set to True (default).
 
@@ -58,20 +58,21 @@ class bashBackend(TextQueryBackend):
     }
 
     # String matching operators. if none is appropriate eq_token is used.
-    startswith_expression : ClassVar[str] = "{field} startswith {value}"
-    endswith_expression   : ClassVar[str] = "{field} endswith {value}"
-    contains_expression   : ClassVar[str] = "{field} contains {value}"
-    wildcard_match_expression : ClassVar[str] = "{field} match {value}"      # Special expression if wildcards can't be matched with the eq_token operator
+    startswith_expression : ClassVar[str] = "{field} == {value}*"
+    endswith_expression   : ClassVar[str] = "{field} == *{value}"
+    contains_expression   : ClassVar[str] = "{field} == *{value}*" #RAZ: might need to add "" around the value
+    wildcard_match_expression : ClassVar[str] = "{field} match {value}"      # Special expression if wildcards can't be matched with the eq_token operator #RAZ: I think that might not be needed
 
     # Regular expressions
     # Regular expression query as format string with placeholders {field}, {regex}, {flag_x} where x
     # is one of the flags shortcuts supported by Sigma (currently i, m and s) and refers to the
     # token stored in the class variable re_flags.
-    re_expression : ClassVar[str] = "{field}=~{regex}"
+    re_expression : ClassVar[str] = "{field} =~ {regex}"
     re_escape_char : ClassVar[str] = "\\"               # Character used for escaping in regular expressions
-    re_escape : ClassVar[Tuple[str]] = ()               # List of strings that are escaped
+    re_escape : ClassVar[Tuple[str]] = ('"')               # List of strings that are escaped
     re_escape_escape_char : bool = True                 # If True, the escape character is also escaped
     re_flag_prefix : bool = True                        # If True, the flags are prepended as (?x) group at the beginning of the regular expression, e.g. (?i). If this is not supported by the target, it should be set to False.
+    
     # Mapping from SigmaRegularExpressionFlag values to static string templates that are used in
     # flag_x placeholders in re_expression template.
     # By default, i, m and s are defined. If a flag is not supported by the target query language,
@@ -82,7 +83,7 @@ class bashBackend(TextQueryBackend):
         SigmaRegularExpressionFlag.DOTALL    : "s",
     }
 
-    # Case sensitive string matching expression. String is quoted/escaped like a normal string.
+    # Case sensitive string matching expression. String is quoted/escaped like a normal string. #RAZ: might need to delete or implement
     # Placeholders {field} and {value} are replaced with field name and quoted/escaped string.
     case_sensitive_match_expression : ClassVar[str] = "{field} casematch {value}"
     # Case sensitive string matching operators similar to standard string matching. If not provided,
@@ -96,13 +97,13 @@ class bashBackend(TextQueryBackend):
     cidr_expression : ClassVar[Optional[str]] = None  # CIDR expression query as format string with placeholders {field}, {value} (the whole CIDR value), {network} (network part only), {prefixlen} (length of network mask prefix) and {netmask} (CIDR network mask only).
 
     # Numeric comparison operators
-    compare_op_expression : ClassVar[str] = "{field}{operator}{value}"  # Compare operation query as format string with placeholders {field}, {operator} and {value}
+    compare_op_expression : ClassVar[str] = "{field} {operator} {value}"  # Compare operation query as format string with placeholders {field}, {operator} and {value}
     # Mapping between CompareOperators elements and strings used as replacement for {operator} in compare_op_expression
     compare_operators : ClassVar[Dict[SigmaCompareExpression.CompareOperators, str]] = {
-        SigmaCompareExpression.CompareOperators.LT  : "<",
-        SigmaCompareExpression.CompareOperators.LTE : "<=",
-        SigmaCompareExpression.CompareOperators.GT  : ">",
-        SigmaCompareExpression.CompareOperators.GTE : ">=",
+        SigmaCompareExpression.CompareOperators.LT: "-lt",
+        SigmaCompareExpression.CompareOperators.LTE: "-le",
+        SigmaCompareExpression.CompareOperators.GT: "-gt",
+        SigmaCompareExpression.CompareOperators.GTE: "-ge",
     }
 
     # Expression for comparing two event fields
@@ -123,7 +124,7 @@ class bashBackend(TextQueryBackend):
     field_in_list_expression : ClassVar[str] = "{field} {op} ({list})"  # Expression for field in list of values as format string with placeholders {field}, {op} and {list}
     or_in_operator : ClassVar[str] = "in"               # Operator used to convert OR into in-expressions. Must be set if convert_or_as_in is set
     and_in_operator : ClassVar[str] = "contains-all"    # Operator used to convert AND into in-expressions. Must be set if convert_and_as_in is set
-    list_separator : ClassVar[str] = ", "               # List element separator
+    list_separator : ClassVar[str] = " "               # List element separator
 
     # Value not bound to a field
     unbound_value_str_expression : ClassVar[str] = '"{value}"'   # Expression for string value not bound to a field as format string with placeholder {value}
