@@ -24,7 +24,10 @@ static int (*original_chown)(const char *pathname, uid_t owner, gid_t group) = N
 
 void log_exec_call(const char*, const char*, char *const[]);
 
-
+//delete the LD_PRELOAD environment variable after the lib is loaded
+void __attribute__((constructor)) library_init(){
+        unsetenv("LD_PRELOAD");
+}
 
 FILE *logfile = NULL;
 

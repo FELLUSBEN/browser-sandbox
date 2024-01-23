@@ -7,7 +7,7 @@ def run_with_preload(command):
     env = os.environ.copy()
     env['LD_PRELOAD'] = lib_path
 
-    subprocess.run(command, env=env, shell=True)
+    subprocess.run(command, env=env)
 
 if __name__ == '__main__':
     suspicious_file = './a.out' # replace with file name
