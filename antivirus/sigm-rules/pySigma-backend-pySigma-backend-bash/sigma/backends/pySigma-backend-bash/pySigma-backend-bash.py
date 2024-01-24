@@ -137,6 +137,36 @@ class bashBackend(TextQueryBackend):
     deferred_only_query : ClassVar[str] = "*"            # String used as query if final query only contains deferred expression
 
     # TODO: implement custom methods for query elements not covered by the default backend base.
-    # Documentation: https://sigmahq-pysigma.readthedocs.io/en/latest/Backends.html
+    # Documentation: https://sigmahq-pysigma.readthedocs.io/en/latest/Backends.html *************************************************************
 
-    
+    def finalize_query_default(self, rule: SigmaRule, query: str, index: int, state: ConversionState) -> str:
+        # TODO: implement the per-query output for the output format {{ format }} here. Usually, the generated query is
+        # embedded into a template, e.g. a JSON format with additional information from the Sigma rule.
+        # # TODO: proper type annotation.
+        # if hasattr(rule, "eventid"): 
+        #     filter = f'-FilterHashTable @{{LogName = "{rule.logsource.service}"; Id = {rule.eventid}}} | '
+        # else:
+        #     filter = f'-LogName "{rule.logsource.service}" | '
+        return f"grep -e {query} {rule.logsource.service}"
+
+    def finalize_output_default(self, queries: List[str]) -> str:
+        # TODO: implement the output finalization for all generated queries for the format {{ format }} here. Usually,
+        # the single generated queries are embedded into a structure, e.g. some JSON or XML that can be imported into
+        # the SIEM.
+        # TODO: proper type annotation. Sigma CLI supports:
+        # - str: output as is.
+        # - bytes: output in file only (e.g. if a zip package is output).
+        # - dict: output serialized as JSON.
+        # - list of str: output each item as is separated by two newlines.
+        # - list of dict: serialize each item as JSON and output all separated by newlines.
+        return "\n".join(queries)
+
+    # def finalize_query_default(self, rule: SigmaRule, query: Any, index: int, state: ConversionState) -> Any:
+    #     if hasattr(rule, "eventid"): 
+    #         filter = f'-FilterHashTable @{{LogName = "{rule.logsource.service}"; Id = {rule.eventid}}} | '
+    #     else:
+    #         filter = f'-LogName "{rule.logsource.service}" | '
+    #     return "Get-WinEvent " + filter + f"Read-WinEvent | Where-Object {{{query}}}"
+
+    # def finalize_output_default(self, queries: List[str]) -> Any:
+    #     return queries
