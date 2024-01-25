@@ -1,14 +1,14 @@
 import pytest
 from sigma.collection import SigmaCollection
-from sigma.backends.pySigma-backend-bash import bashBackend
+from sigma.backends.bash import bashBackend
 
 @pytest.fixture
-def pySigma-backend-bash_backend():
+def bash_backend():
     return bashBackend()
 
 # TODO: implement tests for some basic queries and their expected results.
-def test_pySigma-backend-bash_and_expression(pySigma-backend-bash_backend : bashBackend):
-    assert pySigma-backend-bash_backend.convert(
+def test_bash_and_expression(bash_backend : bashBackend):
+    assert bash_backend.convert(
         SigmaCollection.from_yaml("""
             title: Test
             status: test
@@ -23,8 +23,8 @@ def test_pySigma-backend-bash_and_expression(pySigma-backend-bash_backend : bash
         """)
     ) == ['<insert expected result here>']
 
-def test_pySigma-backend-bash_or_expression(pySigma-backend-bash_backend : bashBackend):
-    assert pySigma-backend-bash_backend.convert(
+def test_bash_or_expression(bash_backend : bashBackend):
+    assert bash_backend.convert(
         SigmaCollection.from_yaml("""
             title: Test
             status: test
@@ -40,8 +40,8 @@ def test_pySigma-backend-bash_or_expression(pySigma-backend-bash_backend : bashB
         """)
     ) == ['<insert expected result here>']
 
-def test_pySigma-backend-bash_and_or_expression(pySigma-backend-bash_backend : bashBackend):
-    assert pySigma-backend-bash_backend.convert(
+def test_bash_and_or_expression(bash_backend : bashBackend):
+    assert bash_backend.convert(
         SigmaCollection.from_yaml("""
             title: Test
             status: test
@@ -60,8 +60,8 @@ def test_pySigma-backend-bash_and_or_expression(pySigma-backend-bash_backend : b
         """)
     ) == ['<insert expected result here>']
 
-def test_pySigma-backend-bash_or_and_expression(pySigma-backend-bash_backend : bashBackend):
-    assert pySigma-backend-bash_backend.convert(
+def test_bash_or_and_expression(bash_backend : bashBackend):
+    assert bash_backend.convert(
         SigmaCollection.from_yaml("""
             title: Test
             status: test
@@ -79,8 +79,8 @@ def test_pySigma-backend-bash_or_and_expression(pySigma-backend-bash_backend : b
         """)
     ) == ['<insert expected result here>']
 
-def test_pySigma-backend-bash_in_expression(pySigma-backend-bash_backend : bashBackend):
-    assert pySigma-backend-bash_backend.convert(
+def test_bash_in_expression(bash_backend : bashBackend):
+    assert bash_backend.convert(
         SigmaCollection.from_yaml("""
             title: Test
             status: test
@@ -97,8 +97,8 @@ def test_pySigma-backend-bash_in_expression(pySigma-backend-bash_backend : bashB
         """)
     ) == ['<insert expected result here>']
 
-def test_pySigma-backend-bash_regex_query(pySigma-backend-bash_backend : bashBackend):
-    assert pySigma-backend-bash_backend.convert(
+def test_bash_regex_query(bash_backend : bashBackend):
+    assert bash_backend.convert(
         SigmaCollection.from_yaml("""
             title: Test
             status: test
@@ -113,8 +113,8 @@ def test_pySigma-backend-bash_regex_query(pySigma-backend-bash_backend : bashBac
         """)
     ) == ['<insert expected result here>']
 
-def test_pySigma-backend-bash_cidr_query(pySigma-backend-bash_backend : bashBackend):
-    assert pySigma-backend-bash_backend.convert(
+def test_bash_cidr_query(bash_backend : bashBackend):
+    assert bash_backend.convert(
         SigmaCollection.from_yaml("""
             title: Test
             status: test
@@ -128,8 +128,8 @@ def test_pySigma-backend-bash_cidr_query(pySigma-backend-bash_backend : bashBack
         """)
     ) == ['<insert expected result here>']
 
-def test_pySigma-backend-bash_field_name_with_whitespace(pySigma-backend-bash_backend : bashBackend):
-    assert pySigma-backend-bash_backend.convert(
+def test_bash_field_name_with_whitespace(bash_backend : bashBackend):
+    assert bash_backend.convert(
         SigmaCollection.from_yaml("""
             title: Test
             status: test
