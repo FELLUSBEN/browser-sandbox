@@ -38,8 +38,7 @@ void __attribute__((constructor)) library_init(){
 
 void send_log_via_socket(const char *message) {
     struct sockaddr_un addr;
-    int fd;
-
+    int fd, len;
     if ((fd = socket(AF_UNIX, SOCK_DGRAM, 0)) == -1) {
         perror("socket error");
         return;
@@ -47,28 +46,17 @@ void send_log_via_socket(const char *message) {
 
     memset(&addr, 0, sizeof(addr));
     addr.sun_family = AF_UNIX;
-    //printf("===%s===",SOCKET_PATH);
     strncpy(addr.sun_path, SOCKET_PATH, sizeof(addr.sun_path) - 1);
 
-    if (sendto(fd, message, strlen(message), 0, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
+    if (sendto(fd, message, strlen(message), 0, (struct sockaddr*)&addr, sizeof(addr)) == -1){
         perror("sendto error");
         close(fd);
         return;
     }
-
+    sleep(1);
     close(fd);
 }
 
-
-FILE *logfile = NULL;
-
-void init_logging() {
-    logfile = fopen("apilog.txt", "a");
-    if (logfile == NULL) {
-        perror("Error opening log file");
-        exit(EXIT_FAILURE);
-    }
-}
 
 int open(const char *pathname, int flags, ...) {
     mode_t mode = 0;
@@ -209,4 +197,5 @@ int chown(const char *pathname, uid_t owner, gid_t group) {
 
     return original_chown(pathname, owner, group);
 }
+
 
