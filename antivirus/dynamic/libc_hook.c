@@ -7,6 +7,9 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/un.h>
 
 //to compile run - gcc -shared -fPIC -o libapilog.so libc_hook.c -ldl
 
@@ -21,13 +24,41 @@ static int (*original_setgid)(gid_t gid) = NULL;
 static int (*original_chmod)(const char *pathname, mode_t mode) = NULL;
 static int (*original_chown)(const char *pathname, uid_t owner, gid_t group) = NULL;
 
+char* SOCKET_PATH = NULL;
 
 void log_exec_call(const char*, const char*, char *const[]);
 
-//delete the LD_PRELOAD environment variable after the lib is loaded
 void __attribute__((constructor)) library_init(){
-        unsetenv("LD_PRELOAD");
+	SOCKET_PATH = getenv("SOCKET_PATH");
+	//printf("===%s===",SOCKET_PATH);
+	//unsetenv("SOCKET_PATH");
+	unsetenv("LD_PRELOAD");
 }
+
+
+void send_log_via_socket(const char *message) {
+    struct sockaddr_un addr;
+    int fd;
+
+    if ((fd = socket(AF_UNIX, SOCK_DGRAM, 0)) == -1) {
+        perror("socket error");
+        return;
+    }
+
+    memset(&addr, 0, sizeof(addr));
+    addr.sun_family = AF_UNIX;
+    //printf("===%s===",SOCKET_PATH);
+    strncpy(addr.sun_path, SOCKET_PATH, sizeof(addr.sun_path) - 1);
+
+    if (sendto(fd, message, strlen(message), 0, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
+        perror("sendto error");
+        close(fd);
+        return;
+    }
+
+    close(fd);
+}
+
 
 FILE *logfile = NULL;
 
@@ -42,10 +73,6 @@ void init_logging() {
 int open(const char *pathname, int flags, ...) {
     mode_t mode = 0;
 
-    if (!logfile) {
-        init_logging();
-    }
-
     if (flags & O_CREAT) {
         va_list args;
         va_start(args, flags);
@@ -57,42 +84,35 @@ int open(const char *pathname, int flags, ...) {
         original_open = (int (*)(const char *, int, mode_t))dlsym(RTLD_NEXT, "open");
     }
 
-    fprintf(logfile, "open called on: %s\n", pathname);
-    fflush(logfile);
-
+    char message[256];
+    snprintf(message, sizeof(message), "open called on: %s", pathname);
+    send_log_via_socket(message);
+   
     return original_open(pathname, flags, mode);
 }
 
 ssize_t write(int fd, const void *buf, size_t count) {
-    if (!logfile) {
-        init_logging();
-    }
 
     if (!original_write) {
         original_write = (ssize_t (*)(int, const void *, size_t))dlsym(RTLD_NEXT, "write");
     }
-    fprintf(logfile, "write called with fd %d and count %zu\n", fd, count);
-    fflush(logfile);
+
+    char message[256];
+    snprintf(message, sizeof(message), "write called with fd %d and count %zu", fd, count);
+    send_log_via_socket(message);
 
     return original_write(fd, buf, count);
 }
 
+
 int execvp(const char *file, char *const argv[]) {
-    if (!logfile) {
-        init_logging();
-    }
 
     if (!original_execvp) {
         original_execvp = (int (*)(const char *, char *const[]))dlsym(RTLD_NEXT, "execvp");
     }
 
-    fprintf(logfile, "execvp called with command: %s\n", file);
-    for (int i = 0; argv[i] != NULL; i++) {
-        fprintf(logfile, "  arg[%d]: %s", i, argv[i]);
-    }
-    fprintf(logfile, "\n");
-    fflush(logfile);
-
+    log_exec_call("execv", file, argv);
+    
     return original_execvp(file, argv);
 }
 
@@ -112,7 +132,7 @@ int execv(const char *pathname, char *const argv[]) {
         original_execv = (int (*)(const char *, char *const[]))dlsym(RTLD_NEXT, "execv");
     }
 
-    log_exec_call("execv", pathname, argv);
+    log_exec_call("execv", pathname, argv); // Reuse the same logging function
 
     return original_execv(pathname, argv);
 }
@@ -121,54 +141,48 @@ int system(const char *command) {
     if (!original_system) {
         original_system = (int (*)(const char *))dlsym(RTLD_NEXT, "system");
     }
-
-    if (logfile) {
-        fprintf(logfile, "system called with command: %s\n", command);
-        fflush(logfile);
-    }
-
+    
+    char message[256];
+    snprintf(message, sizeof(message), "system called with: %s", command);
+    send_log_via_socket(message);
+    
     return original_system(command);
 }
 
 void log_exec_call(const char *func_name, const char *pathname, char *const argv[]) {
-    if (!logfile) {
-        init_logging();
-    }
-    fprintf(logfile, "%s called with pathname: %s |", func_name, pathname);
-    for (int i = 0; argv[i] != NULL; i++) {
-         fprintf(logfile, "  arg[%d]: %s", i, argv[i]);
-    }
-    fprintf(logfile, "\n");
-    fflush(logfile);
+    char message[1024];
+    snprintf(message, sizeof(message), "execve called: Path: %s, Args: ", pathname);
 
+    for (int i = 0; argv[i] != NULL; i++) {
+        strncat(message, argv[i], sizeof(message) - strlen(message) - 1);
+        strncat(message, " ", sizeof(message) - strlen(message) - 1);
+    }
+
+    send_log_via_socket(message);
 }
+
 
 int setuid(uid_t uid) {
     if (!original_setuid) {
         original_setuid = (int (*)(uid_t))dlsym(RTLD_NEXT, "setuid");
     }
 
-    if (!logfile) {
-        init_logging();
-    }
-    fprintf(logfile, "setuid called with uid: %d\n", uid);
-    fflush(logfile);
+    char message[256];
+    snprintf(message, sizeof(message), "setuid called with uid: %d", uid);
+    send_log_via_socket(message);
 
     return original_setuid(uid);
 }
-
 
 int setgid(gid_t gid) {
     if (!original_setgid) {
         original_setgid = (int (*)(gid_t))dlsym(RTLD_NEXT, "setgid");
     }
 
-    if (!logfile) {
-        init_logging();
-    }
-    fprintf(logfile, "setgid called with gid: %d\n", gid);
-    fflush(logfile);
-
+    char message[256];
+    snprintf(message, sizeof(message), "setgid called with gid: %d", gid);
+    send_log_via_socket(message);
+    
     return original_setgid(gid);
 }
 
@@ -177,11 +191,9 @@ int chmod(const char *pathname, mode_t mode) {
         original_chmod = (int (*)(const char *, mode_t))dlsym(RTLD_NEXT, "chmod");
     }
 
-    if (!logfile) {
-        init_logging();
-    }
-    fprintf(logfile, "chmod called on %s with mode: %o\n", pathname, mode);
-    fflush(logfile);
+    char message[256];
+    snprintf(message, sizeof(message), "chmod called on %s with mode: %o", pathname, mode);
+    send_log_via_socket(message);
 
     return original_chmod(pathname, mode);
 }
@@ -191,12 +203,10 @@ int chown(const char *pathname, uid_t owner, gid_t group) {
         original_chown = (int (*)(const char *, uid_t, gid_t))dlsym(RTLD_NEXT, "chown");
     }
 
-    if (!logfile) {
-        init_logging();
-    }
-    fprintf(logfile, "chown called on %s with owner: %d and group: %d\n", pathname, owner, group);
-    fflush(logfile);
-
+    char message[256];
+    snprintf(message, sizeof(message), "chown called on %s with owner: %d and group: %d", pathname, owner, group);
+    send_log_via_socket(message);
 
     return original_chown(pathname, owner, group);
 }
+
