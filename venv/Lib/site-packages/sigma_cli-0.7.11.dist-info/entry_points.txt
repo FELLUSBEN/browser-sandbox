@@ -1,0 +1,3 @@
+[console_scripts]
+sigma=sigma.cli.main:main
+
