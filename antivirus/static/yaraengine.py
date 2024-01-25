@@ -13,9 +13,13 @@ def GetAllRules():
             files[file_name] = file_path
     return files
 
-rules = yara.compile(filepaths={
-    GetAllRules()
-})
+rules = GetAllRules()
+
+compiled_rules = {}
+for file_name, file_path in rules.items():
+    with open(file_path, 'r') as file_content:
+        rules = yara.compile(source=file_content.read())
+        compiled_rules[file_name] = rules
 
 #now we can use our rules to run on files ex: matches = rules.match('/foo/bar/my_huge_file', timeout=60)
 
