@@ -23,6 +23,7 @@ static int (*original_setuid)(uid_t uid) = NULL;
 static int (*original_setgid)(gid_t gid) = NULL;
 static int (*original_chmod)(const char *pathname, mode_t mode) = NULL;
 static int (*original_chown)(const char *pathname, uid_t owner, gid_t group) = NULL;
+static int (*original_mprotect)(void *addr, size_t len, int prot) = NULL;
 
 char* SOCKET_PATH = NULL;
 
@@ -38,8 +39,7 @@ void __attribute__((constructor)) library_init(){
 
 void send_log_via_socket(const char *message) {
     struct sockaddr_un addr;
-    int fd;
-
+    int fd, len;
     if ((fd = socket(AF_UNIX, SOCK_DGRAM, 0)) == -1) {
         perror("socket error");
         return;
@@ -47,27 +47,31 @@ void send_log_via_socket(const char *message) {
 
     memset(&addr, 0, sizeof(addr));
     addr.sun_family = AF_UNIX;
-    //printf("===%s===",SOCKET_PATH);
     strncpy(addr.sun_path, SOCKET_PATH, sizeof(addr.sun_path) - 1);
 
-    if (sendto(fd, message, strlen(message), 0, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
+    if (sendto(fd, message, strlen(message), 0, (struct sockaddr*)&addr, sizeof(addr)) == -1){
         perror("sendto error");
         close(fd);
         return;
     }
-
+    sleep(1);
     close(fd);
 }
 
-
-FILE *logfile = NULL;
-
-void init_logging() {
-    logfile = fopen("apilog.txt", "a");
-    if (logfile == NULL) {
-        perror("Error opening log file");
-        exit(EXIT_FAILURE);
+int mprotect(void *addr, size_t len, int prot){
+    if (!original_mprotect){
+        original_mprotect = (int (*)(void *, size_t, int))dlsym(RTLD_NEXT, "mprotect");
     }
+
+    if ((prot & PROT_WRITE) && (prot & PROT_EXEC)){
+        char message[256];
+        snprintf(message, sizeof(message), "mprotect: %s", "Attempt to set memory region as W and X");
+        send_log_via_socket(message);
+        exit(-1);
+    }
+
+    return original_mprotect(addr, len, prot);
+
 }
 
 int open(const char *pathname, int flags, ...) {
@@ -209,4 +213,5 @@ int chown(const char *pathname, uid_t owner, gid_t group) {
 
     return original_chown(pathname, owner, group);
 }
+
 

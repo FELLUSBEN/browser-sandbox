@@ -147,7 +147,6 @@ def test_bash_field_name_with_whitespace(bash_backend : bashBackend):
 # implemented with custom code, deferred expressions etc.
 
 
-
 def test_bash_format1_output(bash_backend : bashBackend):
     """Test for output format format1."""
     # TODO: implement a test for the output format
