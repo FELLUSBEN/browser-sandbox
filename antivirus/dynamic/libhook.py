@@ -28,7 +28,8 @@ malicious_function_calls = {
     "kill": ["-9 1"],
     "userdel": ["root"],
     "wall": ["'System will shutdown in 1 minute'"],
-    "ln": ["-sf /dev/null ~/.bashrc"]
+    "ln": ["-sf /dev/null ~/.bashrc"],
+    "mprotect": [""]
 }
 
 def get_child_pids(pid):

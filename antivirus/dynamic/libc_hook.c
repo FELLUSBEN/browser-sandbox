@@ -23,6 +23,7 @@ static int (*original_setuid)(uid_t uid) = NULL;
 static int (*original_setgid)(gid_t gid) = NULL;
 static int (*original_chmod)(const char *pathname, mode_t mode) = NULL;
 static int (*original_chown)(const char *pathname, uid_t owner, gid_t group) = NULL;
+static int (*original_mprotect)(void *addr, size_t len, int prot) = NULL;
 
 char* SOCKET_PATH = NULL;
 
@@ -57,6 +58,21 @@ void send_log_via_socket(const char *message) {
     close(fd);
 }
 
+int mprotect(void *addr, size_t len, int prot){
+    if (!original_mprotect){
+        original_mprotect = (int (*)(void *, size_t, int))dlsym(RTLD_NEXT, "mprotect");
+    }
+
+    if ((prot & PROT_WRITE) && (prot & PROT_EXEC)){
+        char message[256];
+        snprintf(message, sizeof(message), "mprotect: %s", "Attempt to set memory region as W and X");
+        send_log_via_socket(message);
+        exit(-1);
+    }
+
+    return original_mprotect(addr, len, prot);
+
+}
 
 int open(const char *pathname, int flags, ...) {
     mode_t mode = 0;
