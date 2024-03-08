@@ -3,7 +3,6 @@ import os
 
 directory_path = './yara-rules/malware' #The directory that will contain all of the rules
 
-
 def GetAllRules():
     # Get file names and paths for all files in the directory
     files = {}
@@ -25,7 +24,7 @@ for file_name, file_path in rules.items():
 #now we can use our rules to run on files ex: matches = rules.match('/foo/bar/my_huge_file', timeout=60)
 #checkin if any rule of our data base rules is matching the file, if so the file is malicous, if the test go without any matches the file is safe to use.
 def CheckFile(path,timeout=60):
-    for key in compiled_rules.keys:
+    for key in compiled_rules:
         if(compiled_rules[key].match(path,timeout)):
             return "Seems to be malicous by yara rule - ", key
     return "The file is safe from yara rules"
