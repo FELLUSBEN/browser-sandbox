@@ -1,5 +1,15 @@
 import tkinter as tk
 from tkinter import messagebox
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEvent, FileSystemEventHandler
+import time
+from static import yaraengine
+
+class Watcher(FileSystemEventHandler):
+    def on_created(self, event: FileSystemEvent) -> None:
+        print(f"new file/dir created : {event.src_path}")
+        #yaraengine.CheckFile(event.src_path)
+
 
 class file_anylzer:
     def __init__(self, path) -> None:
@@ -26,5 +36,17 @@ class file_anylzer:
 
 
 if __name__ == "__main__":
-    file_anylzer = file_anylzer("/downloads") # change path
+    path = '.' # change path
+    file_anylzer = file_anylzer(path) 
     file_anylzer.file_check_system()
+    #watchdog start
+    observer = Observer()
+    event_handler = Watcher()
+    observer.schedule(event_handler, path, recursive= True)
+    observer.start()
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        observer.stop()
+    observer.join()
