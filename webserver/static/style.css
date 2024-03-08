@@ -3,9 +3,10 @@ body, html {
     margin: 0;
     overflow: hidden;
     background-color: #104e7b;
-    background-image: url(./wave.svg);
+    background-image: url(./background.png);
     background-repeat: no-repeat;
-    background-position: bottom;
+    background-position: center center;
+    background-size: cover;
 }
 
 body{
