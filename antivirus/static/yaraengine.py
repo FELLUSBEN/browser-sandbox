@@ -1,7 +1,7 @@
 import yara
 import os
 
-directory_path = './yara-rules/malware' #The directory that will contain all of the rules
+directory_path = './static/yara-rules/malware' #The directory that will contain all of the rules
 
 def GetAllRules():
     # Get file names and paths for all files in the directory

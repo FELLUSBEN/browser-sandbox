@@ -7,7 +7,10 @@ import time
 
 class Watcher(FileSystemEventHandler):
     def on_created(self, event: FileSystemEvent) -> None:
-        print(f"new file/dir created : {event.src_path}")
+        #print(f"new file/dir created : {event.src_path}")
+        root = tk.Tk()
+        root.withdraw()
+        messagebox.showerror("Downloaded File!", f"You downloaded {event.src_path.split('/')[-1]}!\n")
         #yaraengine.CheckFile(event.src_path)
 
 
@@ -47,7 +50,7 @@ class file_anylzer:
 
 
 if __name__ == "__main__":
-    path = 'D:\\test' # change path
+    path = '/home/user/Downloads' # change path
     file_anylzer = file_anylzer(path) 
     file_anylzer.file_check_system()
     

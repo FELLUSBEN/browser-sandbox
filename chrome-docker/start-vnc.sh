@@ -27,8 +27,11 @@ openbox-session &
 # Start x11vnc
 x11vnc -display :1 -nopw -listen localhost -xkb -forever -shared -rfbport 5900 &
 
+python3 /usr/bin/test.py & 
 
+mkdir /home/user/Downloads &
 
+sleep 2
 # Start noVNC
 /noVNC/utils/novnc_proxy --web /noVNC --listen 6080 localhost:5900
 
