@@ -32,8 +32,8 @@ def create_sandbox():
     return redirect(url_for('sandbox'))
 
 #@app.route('/sandbox/<id>/', defaults={'path': ''})
-@app.route('/sandbox/<id>/<path:path>')
-def sandbox_vm(id, path):
+@app.route('/sandbox/<id>/')
+def sandbox_vm(id):
     if 'user_id' not in session:
         return redirect('/')
     if session['user_id'] not in port_map:
