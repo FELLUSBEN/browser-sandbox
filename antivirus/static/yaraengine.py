@@ -26,5 +26,5 @@ for file_name, file_path in rules.items():
 def CheckFile(path,timeout=60):
     for key in compiled_rules:
         if(compiled_rules[key].match(path,timeout)):
-            return "Seems to be malicous by yara rule - ", key
+            return "Seems to be malicous by yara rule - " + key
     return "The file is safe from yara rules"
