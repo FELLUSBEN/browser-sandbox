@@ -20,6 +20,8 @@ RUN apt-get update && apt-get install -y \
     libu2f-udev \
     git \
     python3 \
+    python3-pip \
+    python3-tk \
     python3-numpy \
     python3-websockify \
     && apt-get clean \
@@ -54,6 +56,11 @@ RUN chmod +x /etc/xdg/openbox/autostart
 
 COPY rc.xml /etc/xdg/openbox/rc.xml
 
+COPY file-analyzer-test.py /usr/bin/test.py
+RUN pip3 install watchdog
+
+RUN export DISPLAY=:1.0 
+RUN display=:1.0
 
 # Set default user to 'user'
 USER user
