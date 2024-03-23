@@ -15,6 +15,10 @@ app.secret_key = "tmp"
 def index():
     return render_template('index.html')
 
+@app.route('/loading')
+def loading():
+    return render_template('loading.html')
+
 @app.route('/create_sandbox', methods=['POST'])
 def create_sandbox():
     global port_1, port_2    
@@ -27,11 +31,10 @@ def create_sandbox():
 
     print(session['user_id'])
     port_map[session['user_id']] = port_2
-    subprocess.Popen(['docker','run','--name',f'{session["user_id"]}','-p', f'{str(port_1)}:5900', '-p', f'{str(port_2)}:6080','ubuntu-vnc-chrome'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL ) # create a new docker container
+    subprocess.Popen(['docker','run','--name',f'{session["user_id"]}','-p', f'{str(port_1)}:5900', '-p', f'{str(port_2)}:6080','test'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL ) # create a new docker container
     port_1, port_2 = port_1 + 1, port_2 + 1
-    return redirect(url_for('sandbox'))
+    return redirect(url_for('loading'))
 
-#@app.route('/sandbox/<id>/', defaults={'path': ''})
 @app.route('/sandbox/<id>/')
 def sandbox_vm(id):
     if 'user_id' not in session:
