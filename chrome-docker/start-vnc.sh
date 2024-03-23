@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Start Xvfb
-Xvfb :1 -screen 0 1024x768x16 &
+Xvfb :1 -screen 0 1920x1080x16 &
 sleep 5  # Ensure Xvfb starts
 
 export DISPLAY=:1.0
