@@ -2,6 +2,7 @@ from flask import Flask, render_template, redirect, url_for, session, request, R
 import requests
 import subprocess
 import uuid
+import threading
 
 port_1 = 5900
 port_2 = 6080
@@ -18,6 +19,20 @@ def index():
 @app.route('/loading')
 def loading():
     return render_template('loading.html')
+
+@app.route('/loading_exit')
+def loading_exit():
+    return render_template('loading_exit.html')
+
+@app.route('/download', methods=['POST'])
+def download():
+    pass
+
+@app.route("/end_session", methods=['POST'])
+def end_session():
+    threading.Thread(target=delete_vm, args=(session['user_id'],), daemon=True).start()
+    session.clear()
+    return redirect("/loading_exit")
 
 @app.route('/create_sandbox', methods=['POST'])
 def create_sandbox():
@@ -42,12 +57,6 @@ def sandbox_vm(id):
     if session['user_id'] not in port_map:
         return redirect('/')
     vm_port = port_map[session['user_id']]
-    #req_stream = requests.get(f"http://127.0.0.1:{vm_port}/{path}/", stream=True, params=request.args)
-    #excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
-    #headers = [(name, value) for (name, value) in req_stream.raw.headers.items() if name.lower() not in excluded_headers]
-
-    #return Response(stream_with_context(req_stream.iter_content(chunk_size=1024)), content_type=req_stream.headers['Content-Type'])
-    
     return render_template('vm.html', num=vm_port)
 
 
@@ -59,6 +68,11 @@ def sandbox():
         return redirect('/')
     id = session['user_id']
     return redirect(f'sandbox/{id}/')
+
+def delete_vm(name):
+    subprocess.run(['docker','stop',name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL )
+    subprocess.run(['docker','rm',name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL )
+
 
 if __name__ == '__main__':
     app.run(debug=True, threaded=True)
