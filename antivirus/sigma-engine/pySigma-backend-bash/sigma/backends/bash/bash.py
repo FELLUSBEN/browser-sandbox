@@ -3,7 +3,7 @@ from sigma.rule import SigmaRule
 from sigma.conversion.base import TextQueryBackend
 from sigma.conditions import ConditionItem, ConditionAND, ConditionOR, ConditionNOT
 from sigma.types import SigmaCompareExpression, SigmaRegularExpression, SigmaRegularExpressionFlag
-# from sigma.pipelines.bash import # TODO: add pipeline imports or delete this line
+from sigma.pipelines.bash import bash_pipeline
 import sigma
 import re
 from typing import ClassVar, Dict, Tuple, Pattern, List, Any, Optional
@@ -21,7 +21,12 @@ class bashBackend(TextQueryBackend):
         "default": "Plain bash queries",
         
     }
-    requires_pipeline : bool = False            # TODO: does the backend requires that a processing pipeline is provided? This information can be used by user interface programs like Sigma CLI to warn users about inappropriate usage of the backend.
+    requires_pipeline : bool = False            #Todo:does the backend requires that a processing pipeline is provided? This information can be used by user interface programs like Sigma CLI to warn users about inappropriate usage of the backend.
+    processing_pipeline: bash_pipeline
+    # last_processing_pipeline: bash_pipeline
+    # output_format_processing_pipeline: ClassVar[Dict[str, ProcessingPipeline]] = defaultdict(
+    #     bash_pipeline
+    # )
 
     precedence : ClassVar[Tuple[ConditionItem, ConditionItem, ConditionItem]] = (ConditionNOT, ConditionAND, ConditionOR)
     group_expression : ClassVar[str] = "({expr})"   # Expression for precedence override grouping as format string with {expr} placeholder
