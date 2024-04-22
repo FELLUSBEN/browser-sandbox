@@ -21,6 +21,7 @@ class bashBackend(TextQueryBackend):
         "default": "Plain bash queries",
         
     }
+
     requires_pipeline : bool = False            #Todo:does the backend requires that a processing pipeline is provided? This information can be used by user interface programs like Sigma CLI to warn users about inappropriate usage of the backend.
     processing_pipeline: bash_pipeline
     # last_processing_pipeline: bash_pipeline

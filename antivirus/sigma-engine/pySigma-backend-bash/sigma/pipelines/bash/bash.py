@@ -1,4 +1,4 @@
-from sigma.pipelines.common import logsource_linux, logsource_linux_file_create, logsource_linux_network_connection, logsource_linux_process_creation
+from sigma.pipelines.common import logsource_linux, logsource_linux_file_create, logsource_linux_network_connection, logsource_linux_process_creation,logsource_windows,windows_logsource_mapping
 from sigma.pipelines.base import Pipeline
 from sigma.processing.transformations import AddConditionTransformation, FieldMappingTransformation, DetectionItemFailureTransformation, RuleFailureTransformation, SetStateTransformation, ChangeLogsourceTransformation
 from sigma.processing.postprocessing import EmbedQueryTransformation
@@ -18,8 +18,11 @@ linux_logsource_mapping = { # map all linux services to files
     "sshd":"/var/log/auth.log",
     "sudo":"/var/log/auth.log",
     "syslog":"/var/log/syslog",
-    "vsftpd":"/var/log/vsftpd.log"
+    "vsftpd":"/var/log/vsftpd.log",
+    "test_product":"/var/log/test_product.log",
+    "test_category":"/var/log/test_category.log"
 }
+windows_logsource_mapping
 
 @Pipeline
 # def bash_pipeline() -> ProcessingPipeline:        # Processing pipelines should be defined as functions that return a ProcessingPipeline object.
@@ -55,6 +58,7 @@ linux_logsource_mapping = { # map all linux services to files
 #     )
 #******************this was the initial template ***********
 
+@Pipeline
 def bash_pipeline() -> ProcessingPipeline: #copid powershell_pipeline funq, changed begining
     return ProcessingPipeline(
         name = "Bash pipeline",
@@ -91,6 +95,6 @@ def bash_pipeline() -> ProcessingPipeline: #copid powershell_pipeline funq, chan
                 ],
                 identifier="example",
             )
-        ],
-        finalizers=[ConcatenateQueriesFinalizer()],
+        ]
+        # finalizers=[ConcatenateQueriesFinalizer()],
     )
