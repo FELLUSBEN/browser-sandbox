@@ -57,7 +57,9 @@ RUN chmod +x /etc/xdg/openbox/autostart
 COPY rc.xml /etc/xdg/openbox/rc.xml
 
 COPY file-analyzer-test.py /usr/bin/test.py
-RUN pip3 install watchdog
+RUN pip3 install watchdog flask
+
+COPY downloads.py /usr/bin/download_server.py
 
 RUN export DISPLAY=:1.0 
 RUN display=:1.0
@@ -69,6 +71,7 @@ WORKDIR /home/user
 # Expose VNC and noVNC ports
 EXPOSE 5900
 EXPOSE 6080
+EXPOSE 9000
 
 # Start VNC
 CMD ["/usr/local/bin/start-vnc.sh"]

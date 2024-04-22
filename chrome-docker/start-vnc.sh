@@ -29,6 +29,8 @@ x11vnc -display :1 -nopw -listen localhost -xkb -forever -shared -rfbport 5900 &
 
 python3 /usr/bin/test.py & 
 
+python3 /usr/bin/download_server.py &
+
 mkdir /home/user/Downloads &
 
 sleep 2

@@ -8,7 +8,7 @@
 </head>
 <body>
   <div id="sidePanel" class="side-panel">
-    <iframe src="http://127.0.0.1:5000" frameborder="0"></iframe>
+    <iframe src="http://127.0.0.1:{{download_port}}/" frameborder="0"></iframe>
   </div>
 
   <div id="mainContent" class="main-content">
@@ -19,9 +19,9 @@
     
     <button id="togglePanelBtn" class="button animated-box in" style="background-color: yellowgreen;"><span>Downloads Folder</span></button>
 
-    <div id="sidePanel" class="side-panel">
+    <!--<div id="sidePanel" class="side-panel">
       <iframe src="http://127.0.0.1:5000" frameborder="0"></iframe>
-    </div>
+    </div>-->
 
     <iframe src="http://127.0.0.1:{{num}}?autoconnect=true" allowfullscreen></iframe>
   </div>

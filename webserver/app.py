@@ -6,6 +6,7 @@ import threading
 
 port_1 = 5900
 port_2 = 6080
+port_3 = 9000
 port_map = {}
 
 app = Flask(__name__)
@@ -36,7 +37,7 @@ def end_session():
 
 @app.route('/create_sandbox', methods=['POST'])
 def create_sandbox():
-    global port_1, port_2    
+    global port_1, port_2, port_3  
     if 'user_id' not in session:
         session['user_id'] = str(uuid.uuid4())
     
@@ -45,9 +46,9 @@ def create_sandbox():
         return redirect(f'sandbox/{id}')
 
     print(session['user_id'])
-    port_map[session['user_id']] = port_2
-    subprocess.Popen(['docker','run','--name',f'{session["user_id"]}','-p', f'{str(port_1)}:5900', '-p', f'{str(port_2)}:6080','test'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL ) # create a new docker container
-    port_1, port_2 = port_1 + 1, port_2 + 1
+    port_map[session['user_id']] = (port_2,port_3)
+    subprocess.Popen(['docker','run','--name',f'{session["user_id"]}','-p', f'{str(port_1)}:5900', '-p', f'{str(port_2)}:6080', '-p', f'{str(port_3)}:9000','test2'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL ) # create a new docker container
+    port_1, port_2, port_3 = port_1 + 1, port_2 + 1, port_3 + 1
     return redirect(url_for('loading'))
 
 @app.route('/sandbox/<id>/')
@@ -56,8 +57,9 @@ def sandbox_vm(id):
         return redirect('/')
     if session['user_id'] not in port_map:
         return redirect('/')
-    vm_port = port_map[session['user_id']]
-    return render_template('vm.html', num=vm_port)
+    vm_port = port_map[session['user_id']][0]
+    download_port = port_map[session['user_id']][1]
+    return render_template('vm.html', num=vm_port, download_port=download_port )
 
 
 @app.route('/sandbox')
