@@ -22,12 +22,10 @@ class bashBackend(TextQueryBackend):
         
     }
 
-    requires_pipeline : bool = False            #Todo:does the backend requires that a processing pipeline is provided? This information can be used by user interface programs like Sigma CLI to warn users about inappropriate usage of the backend.
+    requires_pipeline : bool = True            #Todo:does the backend requires that a processing pipeline is provided? This information can be used by user interface programs like Sigma CLI to warn users about inappropriate usage of the backend.
     processing_pipeline: bash_pipeline
     # last_processing_pipeline: bash_pipeline
-    # output_format_processing_pipeline: ClassVar[Dict[str, ProcessingPipeline]] = defaultdict(
-    #     bash_pipeline
-    # )
+    # output_format_processing_pipeline: ClassVar[Dict[str, ProcessingPipeline]] = defaultdict(bash_pipeline)
 
     precedence : ClassVar[Tuple[ConditionItem, ConditionItem, ConditionItem]] = (ConditionNOT, ConditionAND, ConditionOR)
     group_expression : ClassVar[str] = "({expr})"   # Expression for precedence override grouping as format string with {expr} placeholder
@@ -153,7 +151,7 @@ class bashBackend(TextQueryBackend):
         #     filter = f'-FilterHashTable @{{LogName = "{rule.logsource.service}"; Id = {rule.eventid}}} | '
         # else:
         #     filter = f'-LogName "{rule.logsource.service}" | '
-        return f"grep -e {query} {rule.logsource.service}"
+        return f"grep -e {query} {rule.logsource}"
 
     def finalize_output_default(self, queries: List[str]) -> str:
         # TODO: implement the output finalization for all generated queries for the format {{ format }} here. Usually,

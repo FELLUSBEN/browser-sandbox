@@ -18,9 +18,9 @@ linux_logsource_mapping = { # map all linux services to files
     "sshd":"/var/log/auth.log",
     "sudo":"/var/log/auth.log",
     "syslog":"/var/log/syslog",
-    "vsftpd":"/var/log/vsftpd.log",
-    "test_product":"/var/log/test_product.log",
-    "test_category":"/var/log/test_category.log"
+    "vsftpd":"/var/log/vsftpd.log"
+    # "test_product":"/var/log/test_product.log",
+    # "test_category":"/var/log/test_category.log"
 }
 windows_logsource_mapping
 
@@ -60,6 +60,7 @@ windows_logsource_mapping
 
 @Pipeline
 def bash_pipeline() -> ProcessingPipeline: #copid powershell_pipeline funq, changed begining
+    print("pipline works!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     return ProcessingPipeline(
         name = "Bash pipeline",
         allowed_backends=frozenset(),    # Set of identifiers of backends (from the backends mapping) that are allowed to use this processing pipeline. This can be used by frontends like Sigma CLI to warn the user about inappropriate usage.
