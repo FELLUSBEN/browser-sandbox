@@ -1,0 +1,23 @@
+{
+    "manifest_version": 3,
+    "name": "Project extension",
+    "version": "1.0",
+    "description": "Redirects downloads to a project server",
+    "permissions": ["downloads", "webRequest", "webRequestBlocking","tabs","contextMenus"],
+    "background": {
+      "service_worker": "background.js"
+    },
+    "icons": {
+      "16": "/Images/ironman.png",
+      "48": "/Images/ironman.png",
+      "128": "/Images/ironman.png"
+    },
+    "action": {
+      "default_popup": "popup.html",
+      "default_icon": {
+        "16": "/Images/ironman.png",
+        "48": "/Images/ironman.png",
+        "128": "/Images/ironman.png"
+      }
+    }
+  }
