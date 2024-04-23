@@ -57,9 +57,10 @@ def sandbox_vm(id):
         return redirect('/')
     if session['user_id'] not in port_map:
         return redirect('/')
+    ip_address = request.host.split(":")[0]
     vm_port = port_map[session['user_id']][0]
     download_port = port_map[session['user_id']][1]
-    return render_template('vm.html', num=vm_port, download_port=download_port )
+    return render_template('vm.html', num=vm_port, download_port=download_port, ip=ip_address )
 
 
 @app.route('/sandbox')
