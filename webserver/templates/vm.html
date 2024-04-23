@@ -8,12 +8,12 @@
 </head>
 <body>
   <div id="sidePanel" class="side-panel">
-    <iframe src="http://127.0.0.1:{{download_port}}/" frameborder="0"></iframe>
+    <iframe src="http://{{ip}}:{{download_port}}/" frameborder="0"></iframe>
   </div>
 
   <div id="mainContent" class="main-content">
 
-    <form action="http://127.0.0.1:5000/end_session" method="post">
+    <form action="http://{{ip}}:5000/end_session" method="post">
       <button type="submit" class="button animated-box in" style="background-color: #f4511e;"><span>End Session</span></button>
     </form>
     
@@ -23,7 +23,7 @@
       <iframe src="http://127.0.0.1:5000" frameborder="0"></iframe>
     </div>-->
 
-    <iframe src="http://127.0.0.1:{{num}}?autoconnect=true" allowfullscreen></iframe>
+    <iframe src="http://{{ip}}:{{num}}?autoconnect=true" allowfullscreen></iframe>
   </div>
 
   <script src="{{url_for('static', filename='script.js')}}"></script>
