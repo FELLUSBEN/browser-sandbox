@@ -4,7 +4,6 @@ from sigma.conversion.base import TextQueryBackend
 from sigma.conditions import ConditionItem, ConditionAND, ConditionOR, ConditionNOT
 from sigma.types import SigmaCompareExpression, SigmaRegularExpression, SigmaRegularExpressionFlag
 from sigma.pipelines.bash import bash_pipeline
-import sigma
 import re
 from typing import ClassVar, Dict, Tuple, Pattern, List, Any, Optional
 
@@ -23,7 +22,7 @@ class bashBackend(TextQueryBackend):
     }
 
     requires_pipeline : bool = True            #Todo:does the backend requires that a processing pipeline is provided? This information can be used by user interface programs like Sigma CLI to warn users about inappropriate usage of the backend.
-    processing_pipeline: bash_pipeline
+    processing_pipeline : bash_pipeline
     # last_processing_pipeline: bash_pipeline
     # output_format_processing_pipeline: ClassVar[Dict[str, ProcessingPipeline]] = defaultdict(bash_pipeline)
 
@@ -151,7 +150,7 @@ class bashBackend(TextQueryBackend):
         #     filter = f'-FilterHashTable @{{LogName = "{rule.logsource.service}"; Id = {rule.eventid}}} | '
         # else:
         #     filter = f'-LogName "{rule.logsource.service}" | '
-        return f"grep -e {query} {rule.logsource}"
+        return f"grep -e {query} {rule.logsource.service}"
 
     def finalize_output_default(self, queries: List[str]) -> str:
         # TODO: implement the output finalization for all generated queries for the format {{ format }} here. Usually,

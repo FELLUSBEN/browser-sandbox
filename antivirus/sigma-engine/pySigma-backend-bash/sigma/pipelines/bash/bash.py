@@ -18,13 +18,13 @@ linux_logsource_mapping = { # map all linux services to files
     "sshd":"/var/log/auth.log",
     "sudo":"/var/log/auth.log",
     "syslog":"/var/log/syslog",
-    "vsftpd":"/var/log/vsftpd.log"
-    # "test_product":"/var/log/test_product.log",
-    # "test_category":"/var/log/test_category.log"
+    "vsftpd":"/var/log/vsftpd.log",
+    "test_product":"/var/log/test_product.log",
+    "test_category":"/var/log/test_category.log"
 }
 windows_logsource_mapping
 
-@Pipeline
+# @Pipeline
 # def bash_pipeline() -> ProcessingPipeline:        # Processing pipelines should be defined as functions that return a ProcessingPipeline object.
 #     return ProcessingPipeline(
 #         name="bash example pipeline",
@@ -58,44 +58,47 @@ windows_logsource_mapping
 #     )
 #******************this was the initial template ***********
 
+
+    
 @Pipeline
 def bash_pipeline() -> ProcessingPipeline: #copid powershell_pipeline funq, changed begining
-    print("pipline works!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     return ProcessingPipeline(
         name = "Bash pipeline",
         allowed_backends=frozenset(),    # Set of identifiers of backends (from the backends mapping) that are allowed to use this processing pipeline. This can be used by frontends like Sigma CLI to warn the user about inappropriate usage.
         priority=50,            # The priority defines the order pipelines are applied. See documentation for common values.
 
         items = [
-            ProcessingItem(
-                # rule_condition_negation = True,
-                rule_conditions = [LogsourceCondition(product = "linux")],
-                transformation = RuleFailureTransformation(message = "Invalid logsource product.")
-            )
-        ] + [
+        #     ProcessingItem(
+        #         # rule_condition_negation = True,
+        #         rule_conditions = [LogsourceCondition(product = "linux")],
+        #         transformation = RuleFailureTransformation(message = "Invalid logsource product.")
+        #     )
+        # ] + [
             ProcessingItem(
                 identifier=f"bash_{logsource}",
                 rule_conditions = [logsource_linux(logsource)], # if rule matches what is returned by logsource_linux func (e.g., product = linux, service = auth)
-                transformation = ChangeLogsourceTransformation(service = channel) # change service value (e.g., sysmon) to channel value (e.g., Microsoft-Windows-Sysmon/Operational)
+                transformation = ChangeLogsourceTransformation(service = service) # change service value (e.g., sysmon) to channel value (e.g., Microsoft-Windows-Sysmon/Operational)
+                # transformation=AddConditionTransformation({ "source": source}),
+                # rule_conditions=[logsource_linux(service)],
             )
-            for logsource, channel in linux_logsource_mapping.items() # returns multiple kv pairs (service:channel mappings)
-        ] + [ #****************************************************************************************************************
-            ProcessingItem(     # Field mappings
-                identifier="bash_field_mapping",
-                transformation=FieldMappingTransformation({
-                    "EventID": "event_id",      # TODO: define your own field mappings
-                    # "keywords": "grep"
-                })
-            )
-        ],
-        postprocessing_items=[
-            QueryPostprocessingItem(
-                transformation=EmbedQueryTransformation(prefix="...", suffix="..."),
-                rule_condition_linking=any,
-                rule_conditions=[
-                ],
-                identifier="example",
-            )
+            for logsource, service in linux_logsource_mapping.items() # returns multiple kv pairs (service:channel mappings)
+        # ] + [ #****************************************************************************************************************
+        #     ProcessingItem(     # Field mappings
+        #         identifier="bash_field_mapping",
+        #         transformation=FieldMappingTransformation({
+        #             "EventID": "event_id",      # TODO: define your own field mappings
+        #             # "keywords": "grep"
+        #         })
+        #     )
+        # ],
+        # postprocessing_items=[
+        #     QueryPostprocessingItem(
+        #         transformation=EmbedQueryTransformation(prefix="...", suffix="..."),
+        #         rule_condition_linking=any,
+        #         rule_conditions=[
+        #         ],
+        #         identifier="example",
+        #     )
         ]
         # finalizers=[ConcatenateQueriesFinalizer()],
     )
