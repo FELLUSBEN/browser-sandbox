@@ -68,12 +68,12 @@ def bash_pipeline() -> ProcessingPipeline: #copid powershell_pipeline funq, chan
         priority=50,            # The priority defines the order pipelines are applied. See documentation for common values.
 
         items = [
-        #     ProcessingItem(
-        #         # rule_condition_negation = True,
-        #         rule_conditions = [LogsourceCondition(product = "linux")],
-        #         transformation = RuleFailureTransformation(message = "Invalid logsource product.")
-        #     )
-        # ] + [
+            ProcessingItem(
+                rule_condition_negation = True,
+                rule_conditions = [LogsourceCondition(product = "linux")],
+                transformation = RuleFailureTransformation(message = "Invalid logsource product :(")
+            )
+        ] + [
             ProcessingItem(
                 identifier=f"bash_{logsource}",
                 rule_conditions = [logsource_linux(logsource)], # if rule matches what is returned by logsource_linux func (e.g., product = linux, service = auth)
