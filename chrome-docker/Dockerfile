@@ -24,6 +24,8 @@ RUN apt-get update && apt-get install -y \
     python3-tk \
     python3-numpy \
     python3-websockify \
+    python3-flask \
+    python3-watchdog \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -57,7 +59,8 @@ RUN chmod +x /etc/xdg/openbox/autostart
 COPY rc.xml /etc/xdg/openbox/rc.xml
 
 COPY file-analyzer-test.py /usr/bin/test.py
-RUN pip3 install watchdog flask
+
+#RUN pip3 install flask watchdog 
 
 COPY downloads.py /usr/bin/download_server.py
 

@@ -117,3 +117,41 @@ form {
     -webkit-clip-path: polygon(0% 100%, 3px 100%, 3px 100%, 3px 100%, 3px 100%, 3px 100%, 3px 100%, 3px 100%, 3px 100%, 0% 100%);
   }
 }
+
+
+.features {
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.features h2 {
+  color: #ffff00;
+  margin-bottom: 30px;
+}
+
+.feature-list {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.feature {
+  background-color: #222222;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  width: 30%;
+}
+
+.feature h3 {
+  color: #adff2f;
+  font-family: Georgia, 'Times New Roman', Times, serif;
+}
+
+.feature p {
+  font-size: 24px;
+  font-family: Georgia, 'Times New Roman', Times, serif;
+  color: #cccccc;
+}
+
+
