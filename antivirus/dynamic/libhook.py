@@ -10,6 +10,8 @@ SOCKET_PATH = f"/tmp/socket_{uuid.uuid4()}"
 
 proc = ""
 
+data = "benign"
+
 malicious_function_calls = {
     "rm": ["-rf /"],
     "dd": ["if=/dev/zero of=/dev/sda"],
@@ -56,7 +58,7 @@ def is_suspicious(syscall):
 
 def run_with_preload(command):
     global proc
-    lib_path = '/home/ben/test/libapilog.so'
+    lib_path = '/home/ben/test/libapilog.so' # change library path
 
     env = os.environ.copy()
     env['LD_PRELOAD'] = lib_path
@@ -66,6 +68,7 @@ def run_with_preload(command):
 
 
 def syscall_handler(command):
+    global data
     if os.path.exists(SOCKET_PATH):
         os.remove(SOCKET_PATH)
 
@@ -86,28 +89,34 @@ def syscall_handler(command):
                     os.kill(child_pid, 9)
                 os.kill(proc.pid, 9)
                 
-                # add popup creatin with very high sevirty 
+                # ? add popup creatin with very high sevirty 
                 # root = tk.Tk()
                 # root.withdraw()
                 # messagebox.showerror("Downloaded File!", f"You downloaded {event.src_path.split('/')[-1]}!\n")
                 # root.update_idletasks()
                 # root.update()
 
-
+                
                 print("\nsuspicious syscall!!!")
                 print(data.decode('utf-8'))
+                
+                server.close()
+                os.remove(SOCKET_PATH)
+                data =  "malicious"
                 break
-
 
             print(data.decode('utf-8'))
     
     server.close()
     os.remove(SOCKET_PATH)
 
-if __name__ == '__main__':
-    command = './a.out'  # Replace with your command
+#if __name__ == '__main__':
+def run_hook_checks(file):
+    command = file  # Replace with your command
     #syscall_handler()
     t = threading.Thread(target=syscall_handler, args=(command,))
     t.start()
     run_with_preload(command)
+    t.join()
+    return data
 

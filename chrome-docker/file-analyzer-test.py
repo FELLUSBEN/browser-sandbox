@@ -13,8 +13,8 @@ class Watcher(FileSystemEventHandler):
             return     
 
         # run the checks
-        # yara
-        # sigma and hooks
+        # yara - run the yara engine test 
+        # sigma and hooks - write script for sigma rules and run the libhook.py file
 
         root = tk.Tk()
         root.withdraw()
