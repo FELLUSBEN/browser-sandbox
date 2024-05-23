@@ -21,7 +21,7 @@ class bashBackend(TextQueryBackend):
         
     }
 
-    requires_pipeline : bool = True            #Todo:does the backend requires that a processing pipeline is provided? This information can be used by user interface programs like Sigma CLI to warn users about inappropriate usage of the backend.
+    requires_pipeline : bool = False            #Todo:does the backend requires that a processing pipeline is provided? This information can be used by user interface programs like Sigma CLI to warn users about inappropriate usage of the backend.
     processing_pipeline : bash_pipeline
     # last_processing_pipeline: bash_pipeline
     # output_format_processing_pipeline: ClassVar[Dict[str, ProcessingPipeline]] = defaultdict(bash_pipeline)
@@ -30,51 +30,51 @@ class bashBackend(TextQueryBackend):
     group_expression : ClassVar[str] = "({expr})"   # Expression for precedence override grouping as format string with {expr} placeholder
 
     # Generated query tokens
-    token_separator : str = " "     # separator inserted between all boolean operators
-    or_token : ClassVar[str] = " || "
-    and_token : ClassVar[str] = " && "
-    not_token : ClassVar[str] = " ! "
-    eq_token : ClassVar[str] = " == "  # Token inserted between field and value (without separator)
+    token_separator : str = ""     # separator inserted between all boolean operators
+    or_token : ClassVar[str] = "|"
+    and_token : ClassVar[str] = " .* " 
+    not_token : ClassVar[str] = "[^{expr}]" # TODO:needs ferther inspection
+    eq_token : ClassVar[str] = "="  # Token inserted between field and value (without separator)  # TODO:needs ferther inspection
 
-    # String output
+    # String output # TODO:deside if to add "" for every quote or for every string
     ## Fields
     ### Quoting
     field_quote : ClassVar[str] = '"'                              # Character used to quote field characters if field_quote_pattern matches (or not, depending on field_quote_pattern_negation). No field name quoting is done if not set.
     field_quote_pattern : ClassVar[Pattern] = re.compile("^\\w+$")   # Quote field names if this pattern (doesn't) matches, depending on field_quote_pattern_negation. Field name is always quoted if pattern is not set.
     field_quote_pattern_negation : ClassVar[bool] = True            # Negate field_quote_pattern result. Field name is quoted if pattern doesn't matches if set to True (default).
 
-    ### Escaping
+    ### Escaping  #TODO:needs ferther inspection
     field_escape : ClassVar[str] = "\\"               # Character to escape particular parts defined in field_escape_pattern.
     field_escape_quote : ClassVar[bool] = True        # Escape quote string defined in field_quote
     field_escape_pattern : ClassVar[Pattern] = re.compile("\\s")   # All matches of this pattern are prepended with the string contained in field_escape.
 
     ## Values
-    str_quote       : ClassVar[str] = '"'     # string quoting character (added as escaping character)
+    str_quote       : ClassVar[str] = ''     # string quoting character (added as escaping character)
     escape_char     : ClassVar[str] = "\\"    # Escaping character for special characrers inside string
-    wildcard_multi  : ClassVar[str] = "*"     # Character used as multi-character wildcard
-    wildcard_single : ClassVar[str] = "*"     # Character used as single-character wildcard
-    add_escaped     : ClassVar[str] = "\\"    # Characters quoted in addition to wildcards and string quote
-    filter_chars    : ClassVar[str] = ""      # Characters filtered
+    wildcard_multi  : ClassVar[str] = ".*"     # Character used as multi-character wildcard # TODO:needs ferther inspection
+    wildcard_single : ClassVar[str] = "."     # Character used as single-character wildcard # TODO:needs ferther inspection
+    add_escaped     : ClassVar[str] = "\\"    # Characters quoted in addition to wildcards and string quote # TODO:needs ferther inspection
+    filter_chars    : ClassVar[str] = ""      # Characters filtered # TODO:needs ferther inspection
     bool_values     : ClassVar[Dict[bool, str]] = {   # Values to which boolean values are mapped.
-        True: "true",
-        False: "false",
+        True: "true", #mybe 0
+        False: "false", #mybe 1 #[Tt][Rr][Uu][Ee]
     }
 
     # String matching operators. if none is appropriate eq_token is used.
-    startswith_expression : ClassVar[str] = "{field} == {value}*"
-    endswith_expression   : ClassVar[str] = "{field} == *{value}"
-    contains_expression   : ClassVar[str] = "{field} == *{value}*" #RAZ: might need to add "" around the value
-    wildcard_match_expression : ClassVar[str] = "{field} match {value}"      # Special expression if wildcards can't be matched with the eq_token operator #RAZ: I think that might not be needed
+    startswith_expression : ClassVar[str] = "{field}\\s*=\\s*{value}.*"
+    endswith_expression   : ClassVar[str] = "{field}\\s*=\\s*.*{value}"
+    contains_expression   : ClassVar[str] = "{field}\\s*=\\s*.*{value}.*" #RAZ: might need to add "" around the value
+    wildcard_match_expression : ClassVar[str] = "{field} match {value}"      # Special expression if wildcards can't be matched with the eq_token operator #RAZ: I think that might not be needed # TODO:needs ferther inspection
 
     # Regular expressions
     # Regular expression query as format string with placeholders {field}, {regex}, {flag_x} where x
     # is one of the flags shortcuts supported by Sigma (currently i, m and s) and refers to the
     # token stored in the class variable re_flags.
-    re_expression : ClassVar[str] = "{field} =~ {regex}"
+    re_expression : ClassVar[str] = "{field}\\s*=\\s*{regex}"
     re_escape_char : ClassVar[str] = "\\"               # Character used for escaping in regular expressions
     re_escape : ClassVar[Tuple[str]] = ('"')               # List of strings that are escaped
     re_escape_escape_char : bool = True                 # If True, the escape character is also escaped
-    re_flag_prefix : bool = True                        # If True, the flags are prepended as (?x) group at the beginning of the regular expression, e.g. (?i). If this is not supported by the target, it should be set to False.
+    re_flag_prefix : bool = True                        # If True, the flags are prepended as (?x) group at the beginning of the regular expression, e.g. (?i). If this is not supported by the target, it should be set to False. # TODO:needs ferther inspection
     
     # Mapping from SigmaRegularExpressionFlag values to static string templates that are used in
     # flag_x placeholders in re_expression template.
@@ -86,7 +86,7 @@ class bashBackend(TextQueryBackend):
         SigmaRegularExpressionFlag.DOTALL    : "s",
     }
 
-    # Case sensitive string matching expression. String is quoted/escaped like a normal string. #RAZ: might need to delete or implement
+    # Case sensitive string matching expression. String is quoted/escaped like a normal string. #RAZ: might need to delete or implement # TODO:needs ferther inspection
     # Placeholders {field} and {value} are replaced with field name and quoted/escaped string.
     case_sensitive_match_expression : ClassVar[str] = "{field} casematch {value}"
     # Case sensitive string matching operators similar to standard string matching. If not provided,
@@ -102,7 +102,7 @@ class bashBackend(TextQueryBackend):
     # Numeric comparison operators
     compare_op_expression : ClassVar[str] = "{field} {operator} {value}"  # Compare operation query as format string with placeholders {field}, {operator} and {value}
     # Mapping between CompareOperators elements and strings used as replacement for {operator} in compare_op_expression
-    compare_operators : ClassVar[Dict[SigmaCompareExpression.CompareOperators, str]] = {
+    compare_operators : ClassVar[Dict[SigmaCompareExpression.CompareOperators, str]] = {#****************************************************************************************
         SigmaCompareExpression.CompareOperators.LT: "-lt",
         SigmaCompareExpression.CompareOperators.LTE: "-le",
         SigmaCompareExpression.CompareOperators.GT: "-gt",
