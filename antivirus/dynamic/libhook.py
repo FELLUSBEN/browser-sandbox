@@ -86,6 +86,14 @@ def syscall_handler(command):
                     os.kill(child_pid, 9)
                 os.kill(proc.pid, 9)
                 
+                # add popup creatin with very high sevirty 
+                # root = tk.Tk()
+                # root.withdraw()
+                # messagebox.showerror("Downloaded File!", f"You downloaded {event.src_path.split('/')[-1]}!\n")
+                # root.update_idletasks()
+                # root.update()
+
+
                 print("\nsuspicious syscall!!!")
                 print(data.decode('utf-8'))
                 break

@@ -10,7 +10,12 @@ class Watcher(FileSystemEventHandler):
     def on_created(self, event: FileSystemEvent) -> None:
         #print(f"new file/dir created : {event.src_path}")
         if "crdownload" in event.src_path.split('/')[-1] or "com.google.Chrome" in event.src_path.split('/')[-1]:
-            return        
+            return     
+
+        # run the checks
+        # yara
+        # sigma and hooks
+
         root = tk.Tk()
         root.withdraw()
         messagebox.showerror("Downloaded File!", f"You downloaded {event.src_path.split('/')[-1]}!\n")
