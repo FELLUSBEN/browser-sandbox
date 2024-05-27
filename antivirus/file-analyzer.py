@@ -3,12 +3,39 @@ from tkinter import messagebox
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
 import time
+from static import yaraengine
+from dynamic import libhook
+import threading
 #from static import yaraengine
 
 class Watcher(FileSystemEventHandler):
     def on_created(self, event: FileSystemEvent) -> None:
         print(f"new file/dir created : {event.src_path}")
-        #yaraengine.CheckFile(event.src_path)
+        temp = ''
+        temp = yaraengine.CheckFile(event.src_path)
+        if temp != 'Clear':
+            #yara found a match to a malicous patern
+            #self.display_virus_warning(event.src_path, 100)
+            #return 'malicious'
+            pass
+        def dynamic_analysis():
+            temp = ''
+            stop_event = threading.Event()
+            def run_checks():
+                nonlocal temp
+                temp = libhook.run_hook_checks(event.src_path)
+                stop_event.set()
+            check_thread = threading.Thread(target=run_checks)
+            check_thread.start()
+            stop_event.wait(timeout=5) # 5 seconds timeout
+            if check_thread.is_alive():
+                print("Timeout reached, stopping the checks")
+            return temp
+        result = dynamic_analysis()
+        if result == 'malicious':
+            #dynamic analysis found a match to a malicous execution of system command.
+            #self.display_virus_warning(event.src_path, 100)
+            pass
 
 
 class file_anylzer:
