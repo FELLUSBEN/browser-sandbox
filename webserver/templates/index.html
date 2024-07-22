@@ -6,9 +6,22 @@
     </head>
 
     <body>
-        <form action="create_sandbox" method="post">
+        <form action="create_sandbox" method="post" onsubmit="setScreenDimensions()">
+            <input type="hidden" id="width" name="width">
+            <input type="hidden" id="height" name="height">
             <button type="submit" class="button animated-box in"><span>Start Your Sandbox</span></button>
         </form>
+
+        <script>
+            function setScreenDimensions() {
+                var width = Math.round(screen.width * 0.9);
+                var height = Math.round(screen.height * 0.8);
+
+                document.getElementById('width').value = width;
+                document.getElementById('height').value = height;
+            }
+        </script>
+
         <section class="features">
             <div class="feature-list">
                 <div class="feature">
