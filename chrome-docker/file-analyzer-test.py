@@ -3,8 +3,11 @@ from tkinter import messagebox
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
 import time
-#from static import yaraengine
+import requests
+import json
+import os
 
+FILE_CHECK_SERVER_IP = "192.168.1.100"
 
 class Watcher(FileSystemEventHandler):
     def on_created(self, event: FileSystemEvent) -> None:
@@ -14,13 +17,33 @@ class Watcher(FileSystemEventHandler):
 
         # run the checks
         # yara - run the yara engine test 
+
+        if not os.path.isfile(event.src_path):
+            return
+        files = {'file': open(event.src_path, 'rb')}
+        url = f"http://{FILE_CHECK_SERVER_IP}:5001/upload"
+
+        r = requests.post(url, files=files).text
+        data = json.loads(r)
+
+        if data["is_valid"] == False:
+            os.rename(event.src_path, event.src_path +"-malicious")
+            root = tk.Tk()
+            root.withdraw()
+            messagebox.showerror("Found a potential threat!", f"The file {event.src_path.split('/')[-1]} seems to be malicious!\n")
+            root.update_idletasks()
+            root.update()
+        else:
+            os.rename(event.src_path, event.src_path +"-benign")
+            root = tk.Tk()
+            root.withdraw()
+            messagebox.showerror("Download Complete", f"The file {event.src_path.split('/')[-1]} seems to be benign\n")
+            root.update_idletasks()
+            root.update()
+
         # sigma and hooks - write script for sigma rules and run the libhook.py file
 
-        root = tk.Tk()
-        root.withdraw()
-        messagebox.showerror("Downloaded File!", f"You downloaded {event.src_path.split('/')[-1]}!\n")
-        root.update_idletasks()
-        root.update()
+            
         #yaraengine.CheckFile(event.src_path)
 
 

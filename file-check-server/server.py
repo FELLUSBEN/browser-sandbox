@@ -25,6 +25,7 @@ def file_checks(filepath):
         result["is_valid"] = False
         result["message"] = "File is a virus"
 
+    print(result["is_valid"])
     return result
 
 @app.route('/upload', methods=['POST'])
@@ -51,4 +52,4 @@ def upload_file():
     return jsonify({"error": "File not allowed"}), 400
 
 if __name__ == '__main__':
-    app.run(debug=True, host="0.0.0.0")
+    app.run(debug=True, host="0.0.0.0", port=5001)

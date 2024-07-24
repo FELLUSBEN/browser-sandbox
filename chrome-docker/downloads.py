@@ -16,7 +16,12 @@ def list_files():
             <h1 style="color: white">Download Files</h1>
             <ul> 
                 {% for file in files %}
-                    <li><a href="{{ url_for('download_file', filename=file) }}" style="color:white">{{ file }}</a></li>
+                    {% if "-malicious" in file %}
+                                  
+                        <li><a href="{{ url_for('download_file', filename=file) }}" style="color:red">{{ file }}</a></li>
+                    {% else %}
+                        <li><a href="{{ url_for('download_file', filename=file) }}" style="color:white">{{ file }}</a></li>
+                    {% endif %}
                 {% endfor %}
             </ul>       
         </body>                       
