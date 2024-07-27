@@ -1,2 +1,2 @@
 #start chrome
-/usr/bin/google-chrome-stable --use-system-title-bar --no-first-run --no-default-browser-check --no-sandbox --disable-dev-shm-usage &
+/usr/bin/google-chrome-stable --use-system-title-bar --no-first-run --no-default-browser-check --no-sandbox --disable-dev-shm-usage $URL &

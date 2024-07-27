@@ -6,9 +6,10 @@
     </head>
 
     <body>
-        <form action="create_sandbox" method="post" onsubmit="setScreenDimensions()">
+        <form id="startForm" action="create_sandbox" method="post" onsubmit="setScreenDimensions()">
             <input type="hidden" id="width" name="width">
             <input type="hidden" id="height" name="height">
+            <input type="hidden" id="url" name="url" value="{{ url }}">
             <button type="submit" class="button animated-box in"><span>Start Your Sandbox</span></button>
         </form>
 
@@ -20,6 +21,16 @@
                 document.getElementById('width').value = width;
                 document.getElementById('height').value = height;
             }
+
+            window.addEventListener('load', (event) =>  {
+                setScreenDimensions()
+                const form = document.getElementById('startForm');
+                const url = document.getElementById('url');
+
+                if (url.value.trim() !== '') {
+                    form.submit();
+                }
+            });
         </script>
 
         <section class="features">
