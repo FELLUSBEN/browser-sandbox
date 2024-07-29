@@ -4,13 +4,15 @@ import socket
 import threading
 import uuid
 import psutil
-
+import sys
+import time
 
 SOCKET_PATH = f"/tmp/socket_{uuid.uuid4()}"
 
 proc = ""
-
 data = "benign"
+timeout = 30
+
 
 malicious_function_calls = {
     "rm": ["-rf /"],
@@ -21,7 +23,7 @@ malicious_function_calls = {
     "shutdown": ["-h now"],
     "poweroff": [""],
     "mv": ["/home/user /dev/null"],
-    "find": ["/ -type f -exec rm -rf {} \;"],
+    "find": [r"/ -type f -exec rm -rf {} \;"],
     "shred": ["-n 1 -z /dev/sda"],
     "cat": ["/dev/random > /dev/sda"],
     "cp": ["/dev/zero /dev/sda"],
@@ -48,71 +50,67 @@ def is_suspicious(syscall):
         function = syscall.split("Args: ")[1].split(" ")[0]
         for arg in syscall.split("Args: ")[1].split(" ")[1:]:
             arguments.append(arg)
-
     if function in malicious_function_calls:
         for arg in arguments:
             if arg in malicious_function_calls[function]:
                 return True
+    if "mprotect" in syscall:
+        return True        
+    
     return False
 
 
 def run_with_preload(command):
     global proc
-    lib_path = '/home/ben/test/libapilog.so' # change library path
+    lib_path = '/app/libapilog.so' 
 
     env = os.environ.copy()
     env['LD_PRELOAD'] = lib_path
     env['SOCKET_PATH'] = SOCKET_PATH
 
-    proc = subprocess.Popen(command, env=env) # remove the stdout
+    proc = subprocess.Popen(command, stdout=subprocess.DEVNULL ,env=env) # remove the stdout
 
 
 def syscall_handler(command):
-    global data
+    global data, proc
     if os.path.exists(SOCKET_PATH):
         os.remove(SOCKET_PATH)
 
     server = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
     server.bind(SOCKET_PATH)
-    print("Socket server listening...")
+    server.settimeout(1)
+    #print("Socket server listening...")
 
+    start_time = time.time()
 
     while True:
-        data = server.recv(1024)
-        if not data:
+        if time.time() - start_time > timeout:
+            proc.kill()
+            break
+        syscall = ""
+        try:
+            if proc.poll() is not None:
+                break
+            syscall = server.recv(1024)
+        except Exception as e:
+            pass
+        if not syscall:
             continue
         else:
-            if is_suspicious(data.decode('utf-8')):
-                child_pids = get_child_pids(proc.pid)
-                for child_pid in child_pids:
-                    os.kill(child_pid, 9)
-                os.kill(proc.pid, 9)
-                
-                # root = tk.Tk()
-                # root.withdraw()
-                # messagebox.showerror("Downloaded File!", f"You downloaded {event.src_path.split('/')[-1]}!\n")
-                # root.update_idletasks()
-                # root.update()
-                
-                print("\nsuspicious syscall!!!")
-                print(data.decode('utf-8'))
-                
-                server.close()
-                os.remove(SOCKET_PATH)
+            if is_suspicious(syscall.decode('utf-8')):
                 data =  "malicious"
                 break
-
-            print(data.decode('utf-8'))
-    
+                
     server.close()
     os.remove(SOCKET_PATH)
 
-#if __name__ == '__main__':
-def run_hook_checks(file):
-    command = file  # Replace with your command
+if __name__ == '__main__':
+    command = sys.argv[1]  
     t = threading.Thread(target=syscall_handler, args=(command,))
     t.start()
     run_with_preload(command)
     t.join()
-    return data
+    print(data)
+
+    exit()
 

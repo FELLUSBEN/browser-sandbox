@@ -50,14 +50,12 @@ def create_sandbox():
     height = request.form.get("height")
     url = request.form.get("url")
 
-    print(width + " " + height + " " + url)
-
     print(session['user_id'])
     port_map[session['user_id']] = (port_2,port_3)
     if url == "":
-        subprocess.Popen(['docker','run','--name',f'{session["user_id"]}','-p', f'{str(port_1)}:5900', '-p', f'{str(port_2)}:6080', '-p', f'{str(port_3)}:9000', '-e', f'SCREEN_WIDTH={width}', '-e', f'SCREEN_HEIGHT={height}','test3'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL ) # create a new docker container
+        subprocess.Popen(['docker','run','--name',f'{session["user_id"]}','-p', f'{str(port_1)}:5900', '-p', f'{str(port_2)}:6080', '-p', f'{str(port_3)}:9000', '-e', f'SCREEN_WIDTH={width}', '-e', f'SCREEN_HEIGHT={height}','test3'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL ) 
     else:
-        subprocess.Popen(['docker','run','--name',f'{session["user_id"]}','-p', f'{str(port_1)}:5900', '-p', f'{str(port_2)}:6080', '-p', f'{str(port_3)}:9000', '-e', f'SCREEN_WIDTH={width}', '-e', f'SCREEN_HEIGHT={height}', '-e', f"URL={url}",'test3'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL ) # create a new docker container
+        subprocess.Popen(['docker','run','--name',f'{session["user_id"]}','-p', f'{str(port_1)}:5900', '-p', f'{str(port_2)}:6080', '-p', f'{str(port_3)}:9000', '-e', f'SCREEN_WIDTH={width}', '-e', f'SCREEN_HEIGHT={height}', '-e', f"URL={url}",'test3'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL )
 
     port_1, port_2, port_3 = port_1 + 1, port_2 + 1, port_3 + 1
     return redirect(url_for('loading'))
