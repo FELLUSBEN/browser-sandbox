@@ -173,3 +173,86 @@ class bashBackend(TextQueryBackend):
 
     # def finalize_output_default(self, queries: List[str]) -> Any:
     #     return queries
+
+    #additional fanctions
+    def generate_greater_than_regex(n):
+        str_n = str(n)
+        length = len(str_n)
+
+        # Create parts of the regex for numbers with different lengths
+        regex_parts = []
+
+        # Match numbers with more digits than n
+        regex_parts.append(r'\d{%d,}' % (length + 1))
+
+        # Match numbers with the same number of digits as n
+        for i in range(length):
+            prefix = str_n[:i]
+            digit = int(str_n[i])
+            if digit < 9:
+                regex_parts.append(r'%s[%d-9]\d{%d}' % (prefix, digit + 1, length - i - 1))
+
+        return r'|'.join(regex_parts)
+    
+    def generate_greater_equals_regex(n):
+        str_n = str(n)
+        length = len(str_n)
+
+        # Create parts of the regex for numbers with different lengths
+        regex_parts = []
+
+        # Match numbers with more digits than n
+        regex_parts.append(r'\d{%d,}' % (length + 1))
+
+        #match equal number
+        regex_parts.append("123")
+
+        # Match numbers with the same number of digits as n
+        for i in range(length):
+            prefix = str_n[:i]
+            digit = int(str_n[i])
+            if digit < 9:
+                regex_parts.append(r'%s[%d-9]\d{%d}' % (prefix, digit, length - i - 1))
+
+        return r'|'.join(regex_parts)
+    
+    def generate_less_than_regex(n):
+        str_n = str(n)
+        length = len(str_n)
+
+        # Create parts of the regex for numbers with different lengths
+        regex_parts = []
+
+        # Match numbers with more digits than n
+        regex_parts.append(r'\d{,%d}' % (length - 1))
+
+        # Match numbers with the same number of digits as n
+        for i in range(length):
+            prefix = str_n[:i]
+            digit = int(str_n[i])
+            if digit < 9:
+                regex_parts.append(r'%s[0-%d]\d{%d}' % (prefix, digit - 1, length - i - 1))
+
+        return r'|'.join(regex_parts)
+
+    def generate_less_equals_regex(n):
+        str_n = str(n)
+        length = len(str_n)
+
+        # Create parts of the regex for numbers with different lengths
+        regex_parts = []
+
+        # Match numbers with more digits than n
+        regex_parts.append(r'\d{,%d}' % (length - 1))
+
+        #match equal number
+        regex_parts.append("123")
+
+        # Match numbers with the same number of digits as n
+        for i in range(length):
+            prefix = str_n[:i]
+            digit = int(str_n[i])
+            if digit < 9:
+                regex_parts.append(r'%s[0-%d]\d{%d}' % (prefix, digit - 1, length - i - 1))
+
+        return r'|'.join(regex_parts)
