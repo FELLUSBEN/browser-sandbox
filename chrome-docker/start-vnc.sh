@@ -1,7 +1,10 @@
 #!/bin/bash
 
+SCREEN_WIDTH=${SCREEN_WIDTH:-1920}
+SCREEN_HEIGHT=${SCREEN_HEIGHT:-1080}
+
 # Start Xvfb
-Xvfb :1 -screen 0 1920x1080x16 &
+Xvfb :1 -screen 0 ${SCREEN_WIDTH}x${SCREEN_HEIGHT}x16 &
 sleep 5  # Ensure Xvfb starts
 
 export DISPLAY=:1.0

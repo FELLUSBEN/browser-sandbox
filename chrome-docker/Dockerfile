@@ -60,8 +60,6 @@ COPY rc.xml /etc/xdg/openbox/rc.xml
 
 COPY file-analyzer-test.py /usr/bin/test.py
 
-#RUN pip3 install flask watchdog 
-
 COPY downloads.py /usr/bin/download_server.py
 
 RUN export DISPLAY=:1.0 
@@ -70,6 +68,9 @@ RUN display=:1.0
 # Set default user to 'user'
 USER user
 WORKDIR /home/user
+
+ENV SCREEN_WIDTH=1920
+ENV SCREEN_HEIGHT=1080
 
 # Expose VNC and noVNC ports
 EXPOSE 5900

@@ -1,15 +1,24 @@
-
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
-    id: "redirectOption",
-    title: "Redirect to...",
-    contexts: ["page"]
+    id: "redirectSandbox",
+    title: "Redirect to Sandbox",
+    contexts: ["selection", "link"]
   });
 });
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
-  if (info.menuItemId === "redirectOption") {
-    // Redirect the user to the desired URL
-    chrome.tabs.create({ url: "https://mail.google.com/mail/u/0/#inbox" });
+  let url;
+  if (info.menuItemId === "redirectSandbox") {
+    if (info.selectionText) {
+      const selectedText = encodeURIComponent(info.selectionText);
+      url = `http://localhost:5000?url=${selectedText}`;
+    } else if (info.linkUrl) {
+      const linkUrl = encodeURIComponent(info.linkUrl);
+      url = `http://localhost:5000?url=${linkUrl}`;
+    }
+    
+    if (url) {
+      chrome.tabs.create({ url });
+    }
   }
 });

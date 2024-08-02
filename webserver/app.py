@@ -15,7 +15,8 @@ app.secret_key = "tmp"
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    url = request.args.get("url", "")
+    return render_template('index.html',url=url)
 
 @app.route('/loading')
 def loading():
@@ -45,9 +46,17 @@ def create_sandbox():
         id = session['user_id']
         return redirect(f'sandbox/{id}')
 
+    width = request.form.get("width")
+    height = request.form.get("height")
+    url = request.form.get("url")
+
     print(session['user_id'])
     port_map[session['user_id']] = (port_2,port_3)
-    subprocess.Popen(['docker','run','--name',f'{session["user_id"]}','-p', f'{str(port_1)}:5900', '-p', f'{str(port_2)}:6080', '-p', f'{str(port_3)}:9000','test2'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL ) # create a new docker container
+    if url == "":
+        subprocess.Popen(['docker','run','--name',f'{session["user_id"]}','-p', f'{str(port_1)}:5900', '-p', f'{str(port_2)}:6080', '-p', f'{str(port_3)}:9000', '-e', f'SCREEN_WIDTH={width}', '-e', f'SCREEN_HEIGHT={height}','test3'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL ) 
+    else:
+        subprocess.Popen(['docker','run','--name',f'{session["user_id"]}','-p', f'{str(port_1)}:5900', '-p', f'{str(port_2)}:6080', '-p', f'{str(port_3)}:9000', '-e', f'SCREEN_WIDTH={width}', '-e', f'SCREEN_HEIGHT={height}', '-e', f"URL={url}",'test3'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL )
+
     port_1, port_2, port_3 = port_1 + 1, port_2 + 1, port_3 + 1
     return redirect(url_for('loading'))
 
@@ -70,6 +79,8 @@ def sandbox():
     if session['user_id'] not in port_map:
         return redirect('/')
     id = session['user_id']
+    
+
     return redirect(f'sandbox/{id}/')
 
 def delete_vm(name):
