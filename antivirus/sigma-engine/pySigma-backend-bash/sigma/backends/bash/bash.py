@@ -100,13 +100,13 @@ class bashBackend(TextQueryBackend):
     # cidr_expression : ClassVar[Optional[str]] = None  # CIDR expression query as format string with placeholders {field}, {value} (the whole CIDR value), {network} (network part only), {prefixlen} (length of network mask prefix) and {netmask} (CIDR network mask only).
 
     # Numeric comparison operators
-    compare_op_expression : ClassVar[str] = "{field} {operator} {value}"  # Compare operation query as format string with placeholders {field}, {operator} and {value}
+    compare_op_expression : ClassVar[str] = "{field}"+generate_comper_regex("{operator}","{value}")  # Compare operation query as format string with placeholders {field}, {operator} and {value}
     # Mapping between CompareOperators elements and strings used as replacement for {operator} in compare_op_expression
     compare_operators : ClassVar[Dict[SigmaCompareExpression.CompareOperators, str]] = {#*****************************************************************************************
-        SigmaCompareExpression.CompareOperators.LT: "-lt",
-        SigmaCompareExpression.CompareOperators.LTE: "-le",
-        SigmaCompareExpression.CompareOperators.GT: "-gt",
-        SigmaCompareExpression.CompareOperators.GTE: "-ge",
+        SigmaCompareExpression.CompareOperators.LT: "lt",
+        SigmaCompareExpression.CompareOperators.LTE: "le",
+        SigmaCompareExpression.CompareOperators.GT: "gt",
+        SigmaCompareExpression.CompareOperators.GTE: "ge",
     }
 
     # Expression for comparing two event fields
@@ -256,3 +256,15 @@ class bashBackend(TextQueryBackend):
                 regex_parts.append(r'%s[0-%d]\d{%d}' % (prefix, digit - 1, length - i - 1))
 
         return r'|'.join(regex_parts)
+    
+    def generate_comper_regex(op_flag,value):
+        if op_flag == "gt":
+            return generate_greater_than_regex(value)
+        elif op_flag == "ge":
+            return generate_greater_equals_regex(value)
+        elif op_flag == "le":
+            return generate_less_equals_regexecho(value)
+        else:
+            generate_less_than_regex(value)
+        
+        
