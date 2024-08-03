@@ -33,7 +33,7 @@ class bashBackend(TextQueryBackend):
     token_separator : str = ""     # separator inserted between all boolean operators
     or_token : ClassVar[str] = "|"
     and_token : ClassVar[str] = ".*" 
-    not_token : ClassVar[str] = "[^{expr}]" # TODO:needs ferther inspection
+    not_token : ClassVar[str] = "[^{expr}]" # TODO:needs ferther inspection ||| ^((?!word).)*$ used for finding lines without word***********************
     eq_token : ClassVar[str] = "="  # Token inserted between field and value (without separator)  # TODO:needs ferther inspection
 
     # String output # TODO:deside if to add "" for every quote or for every string
@@ -44,7 +44,7 @@ class bashBackend(TextQueryBackend):
     field_quote_pattern_negation : ClassVar[bool] = True            # Negate field_quote_pattern result. Field name is quoted if pattern doesn't matches if set to True (default).
 
     # ### Escaping  #TODO:needs ferther inspection
-    # field_escape : ClassVar[str] = ""               # Character to escape particular parts defined in field_escape_pattern.
+    # field_escape : ClassVar[str] = "\\"               # Character to escape particular parts defined in field_escape_pattern.
     # field_escape_quote : ClassVar[bool] = True        # Escape quote string defined in field_quote
     # field_escape_pattern : ClassVar[Pattern] = re.compile("\\s")   # All matches of this pattern are prepended with the string contained in field_escape.
 

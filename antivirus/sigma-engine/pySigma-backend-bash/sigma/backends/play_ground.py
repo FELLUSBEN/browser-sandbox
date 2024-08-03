@@ -111,11 +111,11 @@ print(bash_backend().convert(
                 selection_user:
                     USER:
                         - '#-*'
-                        - '#*4294967295'
+                        - '#*4294967295' 
                 condition: selection_user
             falsepositives:
                 - Unlikely
             level: critical
         """)
-    ))
+    )) #check if * means literly * or its regex
 
