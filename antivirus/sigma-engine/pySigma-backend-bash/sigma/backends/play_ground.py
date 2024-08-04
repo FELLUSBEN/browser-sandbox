@@ -107,12 +107,15 @@ print(bash_backend().convert(
             logsource:
                 product: linux
                 service: sudo
+            # detection:
+            #     selection_user:
+            #         USER:
+            #             - '#-*'
+            #             - '#*4294967295' 
+            #     condition: selection_user
             detection:
-                selection_user:
-                    USER:
-                        - '#-*'
-                        - '#*4294967295' 
-                condition: selection_user
+                selection:
+                    fieldname|gt: 15
             falsepositives:
                 - Unlikely
             level: critical

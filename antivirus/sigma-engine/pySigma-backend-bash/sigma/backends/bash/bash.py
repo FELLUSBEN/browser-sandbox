@@ -100,7 +100,7 @@ class bashBackend(TextQueryBackend):
     # cidr_expression : ClassVar[Optional[str]] = None  # CIDR expression query as format string with placeholders {field}, {value} (the whole CIDR value), {network} (network part only), {prefixlen} (length of network mask prefix) and {netmask} (CIDR network mask only).
 
     # Numeric comparison operators
-    compare_op_expression : ClassVar[str] = "{field}"+generate_comper_regex("{operator}","{value}")  # Compare operation query as format string with placeholders {field}, {operator} and {value}
+    compare_op_expression : ClassVar[str] = "{field}" + generate_comper_regex("{operator}","{value}")  # Compare operation query as format string with placeholders {field}, {operator} and {value}
     # Mapping between CompareOperators elements and strings used as replacement for {operator} in compare_op_expression
     compare_operators : ClassVar[Dict[SigmaCompareExpression.CompareOperators, str]] = {#*****************************************************************************************
         SigmaCompareExpression.CompareOperators.LT: "lt",
@@ -265,6 +265,6 @@ class bashBackend(TextQueryBackend):
         elif op_flag == "le":
             return generate_less_equals_regexecho(value)
         else:
-            generate_less_than_regex(value)
+            return generate_less_than_regex(value)
         
         
