@@ -7,8 +7,7 @@ last_access = 0
 def main():
     CreateFile(path)
     while(True):
-        sleep(1)
-        print('access time:', os.path.getatime(path))
+        sleep(5)
         if not os.path.getatime(path) == last_access:
             print('Caught by the honeypot!')
             break
@@ -19,8 +18,6 @@ def CreateFile(path):
         file.write('Caught by the honeypot!')
     global last_access
     last_access = os.path.getatime(path)
-    print('last access:', last_access)
-
 
 if __name__ == "__main__":
     main()
