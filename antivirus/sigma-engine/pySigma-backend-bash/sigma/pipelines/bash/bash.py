@@ -1,12 +1,14 @@
 from sigma.pipelines.common import logsource_linux, logsource_linux_file_create, logsource_linux_network_connection, logsource_linux_process_creation,logsource_windows,windows_logsource_mapping
 from sigma.pipelines.base import Pipeline
-from sigma.processing.transformations import AddConditionTransformation, FieldMappingTransformation, DetectionItemFailureTransformation, RuleFailureTransformation, SetStateTransformation, ChangeLogsourceTransformation
+from sigma.processing.transformations import AddConditionTransformation, FieldMappingTransformation, DetectionItemFailureTransformation, RuleFailureTransformation, SetStateTransformation, ChangeLogsourceTransformation,ReplaceStringTransformation,DropDetectionItemTransformation, Transformation
 from sigma.processing.postprocessing import EmbedQueryTransformation
-from sigma.processing.conditions import LogsourceCondition, IncludeFieldCondition, ExcludeFieldCondition, RuleProcessingItemAppliedCondition
+from sigma.processing.conditions import LogsourceCondition, IncludeFieldCondition, ExcludeFieldCondition, RuleProcessingItemAppliedCondition, field_name_conditions, MatchStringCondition
 from sigma.processing.pipeline import ProcessingItem, ProcessingPipeline, QueryPostprocessingItem
+from sigma.rule import SigmaRule
+from sigma.modifiers import SigmaGreaterThanEqualModifier,SigmaGreaterThanModifier,SigmaLessThanEqualModifier,SigmaLessThanModifier
+from sigma.types import * 
 
-# TODO: the following code is just an example extend/adapt as required.
-# See https://sigmahq-pysigma.readthedocs.io/en/latest/Processing_Pipelines.html for further documentation.
+
 
 linux_logsource_mapping = { # map all linux services to files
     "auditd":"/var/log/audit/audit.log",
@@ -22,53 +24,130 @@ linux_logsource_mapping = { # map all linux services to files
     "test_product":"/var/log/test_product.log",
     "test_category":"/var/log/test_category.log"
 }
-windows_logsource_mapping
-
-# @Pipeline
-# def bash_pipeline() -> ProcessingPipeline:        # Processing pipelines should be defined as functions that return a ProcessingPipeline object.
-#     return ProcessingPipeline(
-#         name="bash example pipeline",
-#         allowed_backends=frozenset(),                                               # Set of identifiers of backends (from the backends mapping) that are allowed to use this processing pipeline. This can be used by frontends like Sigma CLI to warn the user about inappropriate usage.
-#         priority=20,            # The priority defines the order pipelines are applied. See documentation for common values.
-#         items=[
-#             ProcessingItem(     # This is an example for processing items generated from the mapping above.
-#                 identifier=f"bash_windows_{service}",
-#                 transformation=AddConditionTransformation({ "source": source}),
-#                 rule_conditions=[logsource_windows(service)],
-#             )
-#             for service, source in windows_logsource_mapping.items()
-#         ] + [
-#             ProcessingItem(     # Field mappings
-#                 identifier="bash_field_mapping",
-#                 transformation=FieldMappingTransformation({
-#                     "EventID": "event_id",      # TODO: define your own field mappings
-#                 })
-#             )
-#         ],
-#         postprocessing_items=[
-#             QueryPostprocessingItem(
-#                 transformation=EmbedQueryTransformation(prefix="...", suffix="..."),
-#                 rule_condition_linking=any,
-#                 rule_conditions=[
-#                 ],
-#                 identifier="example",
-#             )
-#         ],
-#         finalizers=[ConcatenateQueriesFinalizer()],
-#     )
-#******************this was the initial template ***********
 
 
-    
+#functions used to implement gt,gte,lt,lte regex
+def generate_greater_than_regex(n):
+    str_n = str(n)
+    length = len(str_n)
+
+    # Create parts of the regex for numbers with different lengths
+    regex_parts = []
+
+    # Match numbers with more digits than n
+    regex_parts.append('\d{%d,}' % (length + 1))
+
+    # Match numbers with the same number of digits as n
+    for i in range(length):
+        prefix = str_n[:i]
+        digit = int(str_n[i])
+        if digit < 9:
+            regex_parts.append('%s[%d-9]\d{%d}' % (prefix, digit + 1, length - i - 1))
+
+    return '|'.join(regex_parts)
+
+def generate_greater_equals_regex(n):
+    str_n = str(n)
+    length = len(str_n)
+
+    # Create parts of the regex for numbers with different lengths
+    regex_parts = []
+
+    # Match numbers with more digits than n
+    regex_parts.append('\d{%d,}' % (length + 1))
+
+    #match equal number
+    regex_parts.append(str_n)
+
+    # Match numbers with the same number of digits as n
+    for i in range(length):
+        prefix = str_n[:i]
+        digit = int(str_n[i])
+        if digit < 9:
+            regex_parts.append('%s[%d-9]\d{%d}' % (prefix, digit + 1, length - i - 1))
+
+    return '|'.join(regex_parts)
+
+def generate_less_than_regex(n):
+    str_n = str(n)
+    length = len(str_n)
+
+    # Create parts of the regex for numbers with different lengths
+    regex_parts = []
+
+    # Match numbers with less digits than n
+    if length > 1:
+        regex_parts.append('\d{1,%d}' % (length - 1))
+
+    # Match numbers with the same number of digits as n
+    for i in range(length):
+        prefix = str_n[:i]
+        digit = int(str_n[i])
+        if digit < 9:
+            regex_parts.append('%s[0-%d]\d{%d}' % (prefix, digit - 1, length - i - 1))
+
+    return '(' + '|'.join(regex_parts) + ')([^\d]|$)' 
+
+def generate_less_equals_regex(n):
+    str_n = str(n)
+    length = len(str_n)
+
+    # Create parts of the regex for numbers with different lengths
+    regex_parts = []
+
+    # Match numbers with less digits than n
+    if length > 1:
+        regex_parts.append('\d{1,%d}' % (length - 1))
+
+    #match equal number
+    regex_parts.append(str_n)
+
+    # Match numbers with the same number of digits as n
+    for i in range(length):
+        prefix = str_n[:i]
+        digit = int(str_n[i])
+        if digit < 9:
+            regex_parts.append('%s[0-%d]\d{%d}' % (prefix, digit - 1, length - i - 1))
+
+    return '(' + '|'.join(regex_parts) + ')([^\d]|$)'
+
+# prossing function that switch numbers after Numeric comparison operators with its regex
+class PromoteDetectionItemTransformation(Transformation):
+    """Promotes a detection item to the rule component level."""
+    field: str
+    def apply(self, pipeline, rule: SigmaRule) -> None:
+        super().apply(pipeline, rule)
+        for detection in rule.detection.detections.values():
+            for detection_item in detection.detection_items:
+                if SigmaGreaterThanEqualModifier in detection_item.modifiers:
+                    setattr(detection_item, "value", [SigmaString(generate_greater_equals_regex(detection_item.value[0].number.number))])
+                    detection_item.modifiers.remove(SigmaGreaterThanEqualModifier)
+                    return
+                if SigmaGreaterThanModifier in detection_item.modifiers:
+                    setattr(detection_item, "value", [SigmaString(generate_greater_than_regex(detection_item.value[0].number.number))])
+                    detection_item.modifiers.remove(SigmaGreaterThanModifier)
+                    return
+                if SigmaLessThanEqualModifier in detection_item.modifiers:
+                    setattr(detection_item, "value", [SigmaString(generate_less_equals_regex(detection_item.value[0].number.number))])
+                    detection_item.modifiers.remove(SigmaLessThanEqualModifier)
+                    return
+                if SigmaLessThanModifier in detection_item.modifiers:
+                    setattr(detection_item, "value", [SigmaString(generate_less_than_regex(detection_item.value[0].number.number))])
+                    detection_item.modifiers.remove(SigmaLessThanModifier)
+                    return
+
+
+# pipelins
 @Pipeline
 def bash_pipeline() -> ProcessingPipeline: #copid powershell_pipeline funq, changed begining
     return ProcessingPipeline(
         name = "Bash pipeline",
-        allowed_backends=frozenset(),    # Set of identifiers of backends (from the backends mapping) that are allowed to use this processing pipeline. This can be used by frontends like Sigma CLI to warn the user about inappropriate usage.
-        priority=50,            # The priority defines the order pipelines are applied. See documentation for common values.
+        allowed_backends={"bash"},# Set of identifiers of backends (from the backends mapping) that are allowed to use this processing pipeline. This can be used by frontends like Sigma CLI to warn the user about inappropriate usage.
+        priority=20,            # The priority defines the order pipelines are applied. See documentation for common values.
 
         items = [
             ProcessingItem(
+                identifier=f"linux_rule_validator",
                 rule_condition_negation = True,
                 rule_conditions = [LogsourceCondition(product = "linux")],
                 transformation = RuleFailureTransformation(message = "Invalid logsource product :(")
@@ -77,28 +156,13 @@ def bash_pipeline() -> ProcessingPipeline: #copid powershell_pipeline funq, chan
             ProcessingItem(
                 identifier=f"bash_{logsource}",
                 rule_conditions = [logsource_linux(logsource)], # if rule matches what is returned by logsource_linux func (e.g., product = linux, service = auth)
-                transformation = ChangeLogsourceTransformation(service = service) # change service value (e.g., sysmon) to channel value (e.g., Microsoft-Windows-Sysmon/Operational)
-                # transformation=AddConditionTransformation({ "source": source}),
-                # rule_conditions=[logsource_linux(service)],
+                transformation = ChangeLogsourceTransformation(service = service) # change service value (e.g., sysmon) to log file path
             )
             for logsource, service in linux_logsource_mapping.items() # returns multiple kv pairs (service:channel mappings)
-        # ] + [ #****************************************************************************************************************
-        #     ProcessingItem(     # Field mappings
-        #         identifier="bash_field_mapping",
-        #         transformation=FieldMappingTransformation({
-        #             "EventID": "event_id",      # TODO: define your own field mappings
-        #             # "keywords": "grep"
-        #         })
-        #     )
-        # ],
-        # postprocessing_items=[
-        #     QueryPostprocessingItem(
-        #         transformation=EmbedQueryTransformation(prefix="...", suffix="..."),
-        #         rule_condition_linking=any,
-        #         rule_conditions=[
-        #         ],
-        #         identifier="example",
-        #     )
+        ] + [ 
+            ProcessingItem(     # Field mappings
+                identifier="compare_operators_preprosseing",
+                transformation = PromoteDetectionItemTransformation()
+            )
         ]
-        # finalizers=[ConcatenateQueriesFinalizer()],
     )

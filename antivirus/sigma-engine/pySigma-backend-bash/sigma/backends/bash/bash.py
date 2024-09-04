@@ -1,4 +1,5 @@
 from sigma.conversion.state import ConversionState
+from sigma.processing.pipeline import ProcessingPipeline
 from sigma.rule import SigmaRule
 from sigma.conversion.base import TextQueryBackend
 from sigma.conditions import ConditionItem, ConditionAND, ConditionOR, ConditionNOT
@@ -6,6 +7,7 @@ from sigma.types import SigmaCompareExpression, SigmaRegularExpression, SigmaReg
 from sigma.pipelines.bash import bash_pipeline
 import re
 from typing import ClassVar, Dict, Tuple, Pattern, List, Any, Optional
+
 
 class bashBackend(TextQueryBackend):
     """bash"""
@@ -18,13 +20,12 @@ class bashBackend(TextQueryBackend):
     name : ClassVar[str] = "bash"
     formats : Dict[str, str] = {
         "default": "Plain bash queries",
-        
+   
     }
 
-    requires_pipeline : bool = False            #Todo:does the backend requires that a processing pipeline is provided? This information can be used by user interface programs like Sigma CLI to warn users about inappropriate usage of the backend.
-    processing_pipeline : bash_pipeline
-    # last_processing_pipeline: bash_pipeline
-    # output_format_processing_pipeline: ClassVar[Dict[str, ProcessingPipeline]] = defaultdict(bash_pipeline)
+
+    requires_pipeline : bool = True
+    preprocessing_pipelin : bash_pipeline
 
     precedence : ClassVar[Tuple[ConditionItem, ConditionItem, ConditionItem]] = (ConditionNOT, ConditionAND, ConditionOR)
     group_expression : ClassVar[str] = "({expr})"   # Expression for precedence override grouping as format string with {expr} placeholder
@@ -51,9 +52,9 @@ class bashBackend(TextQueryBackend):
     ## Values
     str_quote       : ClassVar[str] = ''     # string quoting character (added as escaping character)
     escape_char     : ClassVar[str] = "\\"    # Escaping character for special characrers inside string
-    wildcard_multi  : ClassVar[str] = "*"     # Character used as multi-character wildcard # TODO:needs ferther inspection
+    wildcard_multi  : ClassVar[str] = ".*"     # Character used as multi-character wildcard # TODO:needs ferther inspection
     wildcard_single : ClassVar[str] = "."     # Character used as single-character wildcard # TODO:needs ferther inspection
-    add_escaped     : ClassVar[str] = "\\"    # Characters quoted in addition to wildcards and string quote # TODO:needs ferther inspection
+    add_escaped     : ClassVar[str] = ""    # Characters quoted in addition to wildcards and string quote # 
     # filter_chars    : ClassVar[str] = ""      # Characters filtered # TODO:needs ferther inspection
     bool_values     : ClassVar[Dict[bool, str]] = {   # Values to which boolean values are mapped.
         True: "[Tt][Rr][Uu][Ee]", #mybe 0
@@ -100,7 +101,7 @@ class bashBackend(TextQueryBackend):
     # cidr_expression : ClassVar[Optional[str]] = None  # CIDR expression query as format string with placeholders {field}, {value} (the whole CIDR value), {network} (network part only), {prefixlen} (length of network mask prefix) and {netmask} (CIDR network mask only).
 
     # Numeric comparison operators
-    compare_op_expression : ClassVar[str] = "{field}" + generate_comper_regex("{operator}","{value}")  # Compare operation query as format string with placeholders {field}, {operator} and {value}
+    compare_op_expression : ClassVar[str] = "{field}\\s?=\\s?{value}"  # Compare operation query as format string with placeholders {field}, {operator} and {value}
     # Mapping between CompareOperators elements and strings used as replacement for {operator} in compare_op_expression
     compare_operators : ClassVar[Dict[SigmaCompareExpression.CompareOperators, str]] = {#*****************************************************************************************
         SigmaCompareExpression.CompareOperators.LT: "lt",
@@ -142,6 +143,9 @@ class bashBackend(TextQueryBackend):
     # TODO: implement custom methods for query elements not covered by the default backend base.
     # Documentation: https://sigmahq-pysigma.readthedocs.io/en/latest/Backends.html *************************************************************
 
+    def __init__(self, processing_pipeline: ProcessingPipeline | None = bash_pipeline(), collect_errors: bool = False):
+        super().__init__(processing_pipeline, collect_errors)
+    
     def finalize_query_default(self, rule: SigmaRule, query: str, index: int, state: ConversionState) -> str:
         # TODO: implement the per-query output for the output format {{ format }} here. Usually, the generated query is
         # embedded into a template, e.g. a JSON format with additional information from the Sigma rule.
@@ -174,97 +178,6 @@ class bashBackend(TextQueryBackend):
     # def finalize_output_default(self, queries: List[str]) -> Any:
     #     return queries
 
-    #additional fanctions
-    def generate_greater_than_regex(n):
-        str_n = str(n)
-        length = len(str_n)
 
-        # Create parts of the regex for numbers with different lengths
-        regex_parts = []
-
-        # Match numbers with more digits than n
-        regex_parts.append(r'\d{%d,}' % (length + 1))
-
-        # Match numbers with the same number of digits as n
-        for i in range(length):
-            prefix = str_n[:i]
-            digit = int(str_n[i])
-            if digit < 9:
-                regex_parts.append(r'%s[%d-9]\d{%d}' % (prefix, digit + 1, length - i - 1))
-
-        return r'|'.join(regex_parts)
     
-    def generate_greater_equals_regex(n):
-        str_n = str(n)
-        length = len(str_n)
-
-        # Create parts of the regex for numbers with different lengths
-        regex_parts = []
-
-        # Match numbers with more digits than n
-        regex_parts.append(r'\d{%d,}' % (length + 1))
-
-        #match equal number
-        regex_parts.append("123")
-
-        # Match numbers with the same number of digits as n
-        for i in range(length):
-            prefix = str_n[:i]
-            digit = int(str_n[i])
-            if digit < 9:
-                regex_parts.append(r'%s[%d-9]\d{%d}' % (prefix, digit, length - i - 1))
-
-        return r'|'.join(regex_parts)
     
-    def generate_less_than_regex(n):
-        str_n = str(n)
-        length = len(str_n)
-
-        # Create parts of the regex for numbers with different lengths
-        regex_parts = []
-
-        # Match numbers with more digits than n
-        regex_parts.append(r'\d{,%d}' % (length - 1))
-
-        # Match numbers with the same number of digits as n
-        for i in range(length):
-            prefix = str_n[:i]
-            digit = int(str_n[i])
-            if digit < 9:
-                regex_parts.append(r'%s[0-%d]\d{%d}' % (prefix, digit - 1, length - i - 1))
-
-        return r'|'.join(regex_parts)
-
-    def generate_less_equals_regex(n):
-        str_n = str(n)
-        length = len(str_n)
-
-        # Create parts of the regex for numbers with different lengths
-        regex_parts = []
-
-        # Match numbers with more digits than n
-        regex_parts.append(r'\d{,%d}' % (length - 1))
-
-        #match equal number
-        regex_parts.append("123")
-
-        # Match numbers with the same number of digits as n
-        for i in range(length):
-            prefix = str_n[:i]
-            digit = int(str_n[i])
-            if digit < 9:
-                regex_parts.append(r'%s[0-%d]\d{%d}' % (prefix, digit - 1, length - i - 1))
-
-        return r'|'.join(regex_parts)
-    
-    def generate_comper_regex(op_flag,value):
-        if op_flag == "gt":
-            return generate_greater_than_regex(value)
-        elif op_flag == "ge":
-            return generate_greater_equals_regex(value)
-        elif op_flag == "le":
-            return generate_less_equals_regexecho(value)
-        else:
-            return generate_less_than_regex(value)
-        
-        

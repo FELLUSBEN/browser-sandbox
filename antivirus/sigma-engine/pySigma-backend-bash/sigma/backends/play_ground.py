@@ -3,7 +3,7 @@ from sigma.backends.bash import bashBackend
 from sigma.pipelines.bash import bash_pipeline 
 
 def bash_backend():
-    return bashBackend(processing_pipeline=bash_pipeline())
+    return bashBackend()
 
 #generic test rule
 print(bash_backend().convert(
@@ -115,7 +115,8 @@ print(bash_backend().convert(
             #     condition: selection_user
             detection:
                 selection:
-                    fieldname|gt: 15
+                    fieldname|lte: 125
+                condition: selection
             falsepositives:
                 - Unlikely
             level: critical
