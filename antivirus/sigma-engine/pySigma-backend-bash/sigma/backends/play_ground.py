@@ -113,9 +113,13 @@ print(bash_backend().convert(
             #             - '#-*'
             #             - '#*4294967295' 
             #     condition: selection_user
+            # detection:
+            #     selection:
+            #         fieldname|lte: 125
+            #     condition: selection
             detection:
                 selection:
-                    fieldname|lte: 125
+                    fieldname:
                 condition: selection
             falsepositives:
                 - Unlikely

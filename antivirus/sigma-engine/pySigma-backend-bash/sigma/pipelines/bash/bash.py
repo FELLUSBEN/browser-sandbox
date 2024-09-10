@@ -139,15 +139,15 @@ class PromoteDetectionItemTransformation(Transformation):
 
 # pipelins
 @Pipeline
-def bash_pipeline() -> ProcessingPipeline: #copid powershell_pipeline funq, changed begining
+def bash_pipeline() -> ProcessingPipeline:
     return ProcessingPipeline(
         name = "Bash pipeline",
         allowed_backends={"bash"},# Set of identifiers of backends (from the backends mapping) that are allowed to use this processing pipeline. This can be used by frontends like Sigma CLI to warn the user about inappropriate usage.
-        priority=20,            # The priority defines the order pipelines are applied. See documentation for common values.
+        priority=50,            # The priority defines the order pipelines are applied. See documentation for common values.
 
         items = [
             ProcessingItem(
-                identifier=f"linux_rule_validator",
+                identifier=f"linux_rule_validator", #rising an error for ruls for products diffrent from linux
                 rule_condition_negation = True,
                 rule_conditions = [LogsourceCondition(product = "linux")],
                 transformation = RuleFailureTransformation(message = "Invalid logsource product :(")
@@ -160,8 +160,8 @@ def bash_pipeline() -> ProcessingPipeline: #copid powershell_pipeline funq, chan
             )
             for logsource, service in linux_logsource_mapping.items() # returns multiple kv pairs (service:channel mappings)
         ] + [ 
-            ProcessingItem(     # Field mappings
-                identifier="compare_operators_preprosseing",
+            ProcessingItem(
+                identifier="compare_operators_preprosseing", #calls the PromoteDetectionItemTransformation that currently used for diling with gt,gte,lt,lte modifiers 
                 transformation = PromoteDetectionItemTransformation()
             )
         ]
