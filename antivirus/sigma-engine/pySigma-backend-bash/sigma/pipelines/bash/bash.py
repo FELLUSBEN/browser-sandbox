@@ -120,21 +120,23 @@ class PromoteDetectionItemTransformation(Transformation):
         for detection in rule.detection.detections.values():
             for detection_item in detection.detection_items:
                 if SigmaGreaterThanEqualModifier in detection_item.modifiers:
-                    setattr(detection_item, "value", [SigmaString(generate_greater_equals_regex(detection_item.value[0].number.number))])
+                    setattr(detection_item, "value", [SigmaString('(' + str(generate_greater_equals_regex(detection_item.value[0].number.number)) + ')')])
                     detection_item.modifiers.remove(SigmaGreaterThanEqualModifier)
                     return
                 if SigmaGreaterThanModifier in detection_item.modifiers:
-                    setattr(detection_item, "value", [SigmaString(generate_greater_than_regex(detection_item.value[0].number.number))])
+                    setattr(detection_item, "value", [SigmaString('(' + str(generate_greater_than_regex(detection_item.value[0].number.number)) + ')')])
                     detection_item.modifiers.remove(SigmaGreaterThanModifier)
                     return
                 if SigmaLessThanEqualModifier in detection_item.modifiers:
-                    setattr(detection_item, "value", [SigmaString(generate_less_equals_regex(detection_item.value[0].number.number))])
+                    setattr(detection_item, "value", [SigmaString('(' + str(generate_less_equals_regex(detection_item.value[0].number.number)) + ')')])
                     detection_item.modifiers.remove(SigmaLessThanEqualModifier)
                     return
                 if SigmaLessThanModifier in detection_item.modifiers:
-                    setattr(detection_item, "value", [SigmaString(generate_less_than_regex(detection_item.value[0].number.number))])
+                    setattr(detection_item, "value", [SigmaString('(' + str(generate_less_than_regex(detection_item.value[0].number.number)) + ')')])
                     detection_item.modifiers.remove(SigmaLessThanModifier)
                     return
+                
+                setattr(detection_item, "value", [SigmaString('(' + str(val) + ')') for val in detection_item.value]) #TODO: check if needed(if not needed, change the above setattr)
 
 
 # pipelins

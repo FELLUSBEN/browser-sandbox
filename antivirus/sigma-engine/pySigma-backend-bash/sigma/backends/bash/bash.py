@@ -30,7 +30,7 @@ class bashBackend(TextQueryBackend):
     or_token : ClassVar[str] = "|"
     and_token : ClassVar[str] = ".*" 
     not_token : ClassVar[str] = "[^({expr})]"
-    eq_token : ClassVar[str] = "="  # Token inserted between field and value (without separator)
+    eq_token : ClassVar[str] = "\\s?=\\s?"  # Token inserted between field and value (without separator)
 
     # String output
     ## Fields
@@ -73,15 +73,6 @@ class bashBackend(TextQueryBackend):
     re_flags : Dict[SigmaRegularExpressionFlag, str] = {
         SigmaRegularExpressionFlag.IGNORECASE: "i",
     }
-
-    # Case sensitive string matching expression. String is quoted/escaped like a normal string. #RAZ: might need to delete or implement # TODO:needs ferther inspection
-    # # Placeholders {field} and {value} are replaced with field name and quoted/escaped string.
-    # case_sensitive_match_expression : ClassVar[str] = "{field} casematch {value}"
-    # # Case sensitive string matching operators similar to standard string matching. If not provided,
-    # # case_sensitive_match_expression is used.
-    # case_sensitive_startswith_expression : ClassVar[str] = "{field} casematch_startswith {value}"
-    # case_sensitive_endswith_expression   : ClassVar[str] = "{field} casematch_endswith {value}"
-    # case_sensitive_contains_expression   : ClassVar[str] = "{field} casematch_contains {value}"
 
     # Numeric comparison operators
     compare_op_expression : ClassVar[str] = "{field}\\s?=\\s?{value}"  # Compare operation query as format string with placeholders {field}, {operator} and {value}

@@ -113,14 +113,14 @@ print(bash_backend().convert(
             #             - '#-*'
             #             - '#*4294967295' 
             #     condition: selection_user
-            # detection:
-            #     selection:
-            #         fieldname|lte: 125
-            #     condition: selection
             detection:
                 selection:
-                    fieldname:
+                    fieldname|lte: 125
                 condition: selection
+            # detection:
+            #     selection:
+            #         fieldname|re: (?i)stam.*
+            #     condition: selection
             falsepositives:
                 - Unlikely
             level: critical
