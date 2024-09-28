@@ -4,11 +4,16 @@ from sigma.processing.transformations import AddConditionTransformation, FieldMa
 from sigma.processing.postprocessing import EmbedQueryTransformation
 from sigma.processing.conditions import LogsourceCondition, IncludeFieldCondition, ExcludeFieldCondition, RuleProcessingItemAppliedCondition, field_name_conditions, MatchStringCondition
 from sigma.processing.pipeline import ProcessingItem, ProcessingPipeline, QueryPostprocessingItem
-from sigma.rule import SigmaRule
+from sigma.rule import SigmaRule, SigmaDetection
 from sigma.modifiers import SigmaGreaterThanEqualModifier,SigmaGreaterThanModifier,SigmaLessThanEqualModifier,SigmaLessThanModifier
-from sigma.types import * 
+from sigma.conditions import *
+from sigma.types import *
+import sigma.backends.bash
+from sigma.conversion.state import ConversionState
 
 
+
+# bashBackend_instance=sigma.backends.bash.bashBackend()
 
 linux_logsource_mapping = { # map all linux services to files
     "auditd":"/var/log/audit/audit.log",
@@ -25,6 +30,29 @@ linux_logsource_mapping = { # map all linux services to files
     "test_category":"/var/log/test_category.log"
 }
 
+def add_path_to_grep(cond: ConditionOR | ConditionAND | ConditionNOT | ConditionFieldEqualsValueExpression | ConditionValueExpression, path: str, detection_items: list[SigmaDetection]) -> SigmaCondition:
+    if not hasattr(add_path_to_grep, 'counter'):
+        add_path_to_grep.counter = 0
+
+    if isinstance(cond,ConditionAND):
+        add_path_to_grep(cond.args[0], path, detection_items)
+        for arg in cond.args[1:]:
+            answer = sigma.backends.bash.bashBackend().compare_precedence(cond, arg) and not isinstance(arg, ConditionAND)
+            add_path_to_grep(arg, None, detection_items) if sigma.backends.bash.bashBackend().compare_precedence(cond, arg) and not(isinstance(arg,ConditionNOT) and arg.args) else add_path_to_grep(arg, path, detection_items) #add_path_to_grep(arg, path, detection_items) if answer else add_path_to_grep(arg, None, detection_items) #
+    elif isinstance(cond,ConditionOR) and not sigma.backends.bash.bashBackend().decide_convert_condition_as_in_expression(cond, ConversionState()):
+        for arg in cond.args:
+            add_path_to_grep(arg, path, detection_items)
+    elif isinstance(cond,ConditionNOT):
+        for arg in cond.args:
+            add_path_to_grep(arg, path, detection_items)
+    else:
+        if path:
+            setattr(detection_items[add_path_to_grep.counter], "source", SigmaRuleLocation(path))
+        if add_path_to_grep.counter+1 == len(detection_items):
+            add_path_to_grep.counter = 0 
+        else:
+            add_path_to_grep.counter += 1
+    return detection_items
 
 #functions used to implement gt,gte,lt,lte regex
 def generate_greater_than_regex(n):
@@ -117,6 +145,13 @@ class PromoteDetectionItemTransformation(Transformation):
     field: str
     def apply(self, pipeline, rule: SigmaRule) -> None:
         super().apply(pipeline, rule)
+        
+        detection_items = []
+        [[detection_items.append(di) for di in dv.detection_items] for dv in rule.detection.detections.values()]
+        
+        for pc in rule.detection.parsed_condition:
+            add_path_to_grep(pc.parsed, rule.logsource.service, detection_items)
+
         for detection in rule.detection.detections.values():
             for detection_item in detection.detection_items:
                 if SigmaGreaterThanEqualModifier in detection_item.modifiers:
@@ -136,11 +171,11 @@ class PromoteDetectionItemTransformation(Transformation):
                     detection_item.modifiers.remove(SigmaLessThanModifier)
                     return
                 
-                setattr(detection_item, "value", [SigmaString('(' + str(val) + ')') for val in detection_item.value]) #TODO: check if needed(if not needed, change the above setattr)
+                # setattr(detection_item, "value", [SigmaString('(' + str(val) + ')') for val in detection_item.value]) #TODO: check if needed(if not needed, change the above setattr)(if needed might be better off in a postproccessing pipline becase of interapting modifiers like re)
 
 
 # pipelins
-@Pipeline
+# @Pipeline
 def bash_pipeline() -> ProcessingPipeline:
     return ProcessingPipeline(
         name = "Bash pipeline",

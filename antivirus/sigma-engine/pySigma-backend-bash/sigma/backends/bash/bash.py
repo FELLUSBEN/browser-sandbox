@@ -1,10 +1,11 @@
+from sigma.conversion.deferred import DeferredQueryExpression
 from sigma.conversion.state import ConversionState
 from sigma.processing.pipeline import ProcessingPipeline
 from sigma.rule import SigmaRule
 from sigma.conversion.base import TextQueryBackend
-from sigma.conditions import ConditionItem, ConditionAND, ConditionOR, ConditionNOT
+from sigma.conditions import *
 from sigma.types import SigmaCompareExpression, SigmaRegularExpression, SigmaRegularExpressionFlag
-from sigma.pipelines.bash import bash_pipeline
+import sigma.pipelines.bash #import bash_pipeline
 import re
 from typing import ClassVar, Dict, Tuple, Pattern, List, Any, Optional
 
@@ -18,18 +19,18 @@ class bashBackend(TextQueryBackend):
 
 
     requires_pipeline : bool = True
-    preprocessing_pipelin : bash_pipeline
+    preprocessing_pipelin : sigma.pipelines.bash.bash_pipeline
 
     # Operator precedence: tuple of Condition{AND,OR,NOT} in order of precedence.
     # The backend generates grouping if required
     precedence : ClassVar[Tuple[ConditionItem, ConditionItem, ConditionItem]] = (ConditionNOT, ConditionAND, ConditionOR)
-    group_expression : ClassVar[str] = "({expr})"   # Expression for precedence override grouping as format string with {expr} placeholder
+    group_expression : ClassVar[str] = "< (grep {expr})"   # Expression for precedence override grouping as format string with {expr} placeholder
 
     # Generated query tokens
     token_separator : str = ""     # separator inserted between all boolean operators
-    or_token : ClassVar[str] = "|"
-    and_token : ClassVar[str] = ".*" 
-    not_token : ClassVar[str] = "[^({expr})]"
+    or_token : ClassVar[str] = " ; grep " # |
+    and_token : ClassVar[str] = " | grep " # .*
+    not_token : ClassVar[str] = "-v "
     eq_token : ClassVar[str] = "\\s?=\\s?"  # Token inserted between field and value (without separator)
 
     # String output
@@ -44,8 +45,8 @@ class bashBackend(TextQueryBackend):
     escape_char     : ClassVar[str] = "\\"    # Escaping character for special characrers inside string
     wildcard_multi  : ClassVar[str] = ".*"     # Character used as multi-character wildcard
     wildcard_single : ClassVar[str] = "."     # Character used as single-character wildcard
-    add_escaped     : ClassVar[str] = ""    # Characters quoted in addition to wildcards and string quote # 
-    # filter_chars    : ClassVar[str] = ""      # Characters filtered
+    add_escaped     : ClassVar[str] = "\\^$.|?*+()[]{}"    # Characters quoted in addition to wildcards and string quote # 
+    filter_chars    : ClassVar[str] = ""      # Characters filtered
     bool_values     : ClassVar[Dict[bool, str]] = {   # Values to which boolean values are mapped.
         True: "[Tt][Rr][Uu][Ee]", #mybe 0
         False: "[Ff][Aa][Ll][Ss][Ee]", #mybe 1 
@@ -60,17 +61,17 @@ class bashBackend(TextQueryBackend):
     # Regular expression query as format string with placeholders {field}, {regex}, {flag_x} where x
     # is one of the flags shortcuts supported by Sigma (currently i, m and s) and refers to the
     # token stored in the class variable re_flags.
-    re_expression : ClassVar[str] = "{field}\\s?=\\s?{regex}"
+    re_expression : ClassVar[str] = "{field}\\s?=\\s?{regex}{flag_i}"
     re_escape_char : ClassVar[str] = "\\"               # Character used for escaping in regular expressions
     re_escape : ClassVar[Tuple[str]] = ()               # List of strings that are escaped 
     re_escape_escape_char : bool = True                 # If True, the escape character is also escaped
-    re_flag_prefix : bool = False                        # If True, the flags are prepended as (?x) group at the beginning of the regular expression, e.g. (?i). If this is not supported by the target, it should be set to False. # TODO:needs ferther inspection
+    re_flag_prefix : bool = True                       # If True, the flags are prepended as (?x) group at the beginning of the regular expression, e.g. (?i). If this is not supported by the target, it should be set to False. # TODO:needs ferther inspection
     
     # Mapping from SigmaRegularExpressionFlag values to static string templates that are used in
     # flag_x placeholders in re_expression template.
     # By default, i, m and s are defined. If a flag is not supported by the target query language,
     # remove it from re_flags or don't define it to ensure proper error handling in case of appearance.
-    re_flags : Dict[SigmaRegularExpressionFlag, str] = {
+    re_flags : Dict[SigmaRegularExpressionFlag, str] = { #TODO figureout how dose it works
         SigmaRegularExpressionFlag.IGNORECASE: "i",
     }
 
@@ -94,13 +95,12 @@ class bashBackend(TextQueryBackend):
     field_exists_expression : ClassVar[str] = "{field}\\s?(=|:)"             # Expression for field existence as format string with {field} placeholder for field name
     field_not_exists_expression : ClassVar[str] = "[^({field}\\s?(=|:))]"      # Expression for field non-existence as format string with {field} placeholder for field name. If not set, field_exists_expression is negated with boolean NOT.
 
-    # Field value in list, e.g. "field in (value list)" or "field containsall (value list)" TODO:needs ferther inspection
+    # Field value in list, e.g. "field in (value list)" or "field containsall (value list)" 
     convert_or_as_in : ClassVar[bool] = True                     # Convert OR as in-expression
-    convert_and_as_in : ClassVar[bool] = False                   # Convert AND as in-expression
+    convert_and_as_in : ClassVar[bool] = False                   # Convert AND as in-expression 
     in_expressions_allow_wildcards : ClassVar[bool] = True       # Values in list can contain wildcards. If set to False (default) only plain values are converted into in-expressions.
-    field_in_list_expression : ClassVar[str] = "{field}{op}{list}"  # Expression for field in list of values as format string with placeholders {field}, {op} and {list}
+    field_in_list_expression : ClassVar[str] = "{field}{op}({list})"  # Expression for field in list of values as format string with placeholders {field}, {op} and {list}
     or_in_operator : ClassVar[str] = f"\\s?=\\s?"               # Operator used to convert OR into in-expressions. Must be set if convert_or_as_in is set
-    # and_in_operator : ClassVar[str] = "contains-all"    # Operator used to convert AND into in-expressions. Must be set if convert_and_as_in is set
     list_separator : ClassVar[str] = "|"               # List element separator
 
     # Value not bound to a field
@@ -113,9 +113,16 @@ class bashBackend(TextQueryBackend):
     deferred_separator : ClassVar[str] = "\n| "           # String used to join multiple deferred query parts
     deferred_only_query : ClassVar[str] = "*"            # String used as query if final query only contains deferred expression
 
-    def __init__(self, processing_pipeline: ProcessingPipeline | None = bash_pipeline(), collect_errors: bool = False):
+    def __init__(self, processing_pipeline: ProcessingPipeline | None = sigma.pipelines.bash.bash_pipeline(), collect_errors: bool = False):
         super().__init__(processing_pipeline, collect_errors)
     
+    # def decide_convert_condition_as_in_expression(self, cond: ConditionOR | ConditionAND, state: ConversionState) -> bool: #TODO check if usfull to make the keyword exprression an as_in_expression
+        # return super().decide_convert_condition_as_in_expression(cond, state)
+
+    def convert_condition(self, cond: ConditionOR | ConditionAND | ConditionNOT | ConditionFieldEqualsValueExpression | ConditionValueExpression, state: ConversionState) -> Any:
+        return super().convert_condition(cond, state) + " " + str(cond.source.path) if cond.source and (not isinstance(cond,(ConditionAND,ConditionOR)) or (isinstance(cond,(ConditionAND,ConditionOR)) and self.decide_convert_condition_as_in_expression(cond, state))) else super().convert_condition(cond, state)
+       
+
     def finalize_query_default(self, rule: SigmaRule, query: str, index: int, state: ConversionState) -> str:
         # TODO: implement the per-query output for the output format {{ format }} here. Usually, the generated query is
         # embedded into a template, e.g. a JSON format with additional information from the Sigma rule.
@@ -124,7 +131,7 @@ class bashBackend(TextQueryBackend):
         #     filter = f'-FilterHashTable @{{LogName = "{rule.logsource.service}"; Id = {rule.eventid}}} | '
         # else:
         #     filter = f'-LogName "{rule.logsource.service}" | '
-        return f"grep -e {query} {rule.logsource.service}"
+        return f"grep {query} {rule.logsource.service}"
 
     def finalize_output_default(self, queries: List[str]) -> str:
         # TODO: implement the output finalization for all generated queries for the format {{ format }} here. Usually,
@@ -137,16 +144,6 @@ class bashBackend(TextQueryBackend):
         # - list of str: output each item as is separated by two newlines.
         # - list of dict: serialize each item as JSON and output all separated by newlines.
         return "\n".join(queries)
-
-    # def finalize_query_default(self, rule: SigmaRule, query: Any, index: int, state: ConversionState) -> Any:
-    #     if hasattr(rule, "eventid"): 
-    #         filter = f'-FilterHashTable @{{LogName = "{rule.logsource.service}"; Id = {rule.eventid}}} | '
-    #     else:
-    #         filter = f'-LogName "{rule.logsource.service}" | '
-    #     return "Get-WinEvent " + filter + f"Read-WinEvent | Where-Object {{{query}}}"
-
-    # def finalize_output_default(self, queries: List[str]) -> Any:
-    #     return queries
 
 
     
