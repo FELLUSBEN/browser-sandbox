@@ -4,7 +4,7 @@ from sigma.processing.pipeline import ProcessingPipeline
 from sigma.rule import SigmaRule
 from sigma.conversion.base import TextQueryBackend
 from sigma.conditions import *
-from sigma.types import SigmaCompareExpression, SigmaRegularExpression, SigmaRegularExpressionFlag
+from sigma.types import *
 import sigma.pipelines.bash #import bash_pipeline
 import re
 from typing import ClassVar, Dict, Tuple, Pattern, List, Any, Optional
@@ -116,8 +116,46 @@ class bashBackend(TextQueryBackend):
     def __init__(self, processing_pipeline: ProcessingPipeline | None = sigma.pipelines.bash.bash_pipeline(), collect_errors: bool = False):
         super().__init__(processing_pipeline, collect_errors)
     
-    # def decide_convert_condition_as_in_expression(self, cond: ConditionOR | ConditionAND, state: ConversionState) -> bool: #TODO check if usfull to make the keyword exprression an as_in_expression
-        # return super().decide_convert_condition_as_in_expression(cond, state)
+    def decide_convert_condition_as_in_expression(self, cond: Union[ConditionOR, ConditionAND], state: ConversionState) -> bool: #TODO check if usfull to make the keyword exprression an as_in_expression
+        # Check if conversion of condition type is enabled
+        if (
+            not self.convert_or_as_in
+            and isinstance(cond, ConditionOR)
+            or not self.convert_and_as_in
+            and isinstance(cond, ConditionAND)
+        ):
+            return False
+
+        # Check if more than one argument is present
+        # if len(cond.args <= 1):
+        #    return False
+
+        # All arguments of the given condition must reference a field
+        if not all((isinstance(arg, ConditionFieldEqualsValueExpression) for arg in cond.args)):
+            return False
+
+        # Build a set of all fields appearing in condition arguments
+        fields = {arg.field for arg in cond.args}
+        # All arguments must reference the same field
+        if not (len(fields) == 1 or len(fields) == 0):
+            return False
+
+        # All argument values must be strings or numbers
+        if not all([isinstance(arg.value, (SigmaString, SigmaNumber)) for arg in cond.args]):
+            return False
+
+        # Check for plain strings if wildcards are not allowed for string expressions.
+        if not self.in_expressions_allow_wildcards and any(
+            [
+                arg.value.contains_special()
+                for arg in cond.args
+                if isinstance(arg.value, SigmaString)
+            ]
+        ):
+            return False
+
+        # All checks passed, expression can be converted to in-expression
+        return True
 
     def convert_condition(self, cond: ConditionOR | ConditionAND | ConditionNOT | ConditionFieldEqualsValueExpression | ConditionValueExpression, state: ConversionState) -> Any:
         return super().convert_condition(cond, state) + " " + str(cond.source.path) if cond.source and (not isinstance(cond,(ConditionAND,ConditionOR)) or (isinstance(cond,(ConditionAND,ConditionOR)) and self.decide_convert_condition_as_in_expression(cond, state))) else super().convert_condition(cond, state)
@@ -131,7 +169,7 @@ class bashBackend(TextQueryBackend):
         #     filter = f'-FilterHashTable @{{LogName = "{rule.logsource.service}"; Id = {rule.eventid}}} | '
         # else:
         #     filter = f'-LogName "{rule.logsource.service}" | '
-        return f"grep {query} {rule.logsource.service}"
+        return f"grep {query} {rule.level}"
 
     def finalize_output_default(self, queries: List[str]) -> str:
         # TODO: implement the output finalization for all generated queries for the format {{ format }} here. Usually,
@@ -143,7 +181,7 @@ class bashBackend(TextQueryBackend):
         # - dict: output serialized as JSON.
         # - list of str: output each item as is separated by two newlines.
         # - list of dict: serialize each item as JSON and output all separated by newlines.
-        return "\n".join(queries)
+        return "\n;\n".join(queries)
 
 
     

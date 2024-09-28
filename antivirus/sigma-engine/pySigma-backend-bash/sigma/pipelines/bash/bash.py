@@ -26,8 +26,7 @@ linux_logsource_mapping = { # map all linux services to files
     "sudo":"/var/log/auth.log",
     "syslog":"/var/log/syslog",
     "vsftpd":"/var/log/vsftpd.log",
-    "test_product":"/var/log/test_product.log",
-    "test_category":"/var/log/test_category.log"
+    None:"/var/log/syslog"
 }
 
 def add_path_to_grep(cond: ConditionOR | ConditionAND | ConditionNOT | ConditionFieldEqualsValueExpression | ConditionValueExpression, path: str, detection_items: list[SigmaDetection]) -> SigmaCondition:
@@ -48,6 +47,9 @@ def add_path_to_grep(cond: ConditionOR | ConditionAND | ConditionNOT | Condition
     else:
         if path:
             setattr(detection_items[add_path_to_grep.counter], "source", SigmaRuleLocation(path))
+        else:
+            setattr(detection_items[add_path_to_grep.counter], "source", None)
+
         if add_path_to_grep.counter+1 == len(detection_items):
             add_path_to_grep.counter = 0 
         else:
@@ -150,6 +152,7 @@ class PromoteDetectionItemTransformation(Transformation):
         [[detection_items.append(di) for di in dv.detection_items] for dv in rule.detection.detections.values()]
         
         for pc in rule.detection.parsed_condition:
+            # add_path_to_grep.counter = 0 #TODO might be good idea to add in order to prevent moving error
             add_path_to_grep(pc.parsed, rule.logsource.service, detection_items)
 
         for detection in rule.detection.detections.values():
@@ -175,7 +178,6 @@ class PromoteDetectionItemTransformation(Transformation):
 
 
 # pipelins
-# @Pipeline
 def bash_pipeline() -> ProcessingPipeline:
     return ProcessingPipeline(
         name = "Bash pipeline",

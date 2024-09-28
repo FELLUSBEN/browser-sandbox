@@ -1,22 +1,66 @@
-# from sigma.collection import SigmaCollection
-# from sigma.backends.bash import bashBackend
+from sigma.collection import SigmaCollection
+from sigma.backends.bash import bashBackend
 
-# def bash_backend():
-#     return bashBackend()
+def bash_backend():
+    return bashBackend()
+
+#generic test rule
+print(bash_backend().convert(
+        SigmaCollection.from_yaml("""
+            title: Remote File Copy
+            id: 7a14080d-a048-4de8-ae58-604ce58a795b
+            status: stable
+            description: Detects the use of tools that copy files from or to remote systems
+            references:
+                - https://attack.mitre.org/techniques/T1105/
+            author: Ömer Günal
+            date: 2020-06-18
+            tags:
+                - attack.command-and-control
+                - attack.lateral-movement
+                - attack.t1105
+            logsource:
+                product: linux
+            detection:
+                tools:
+                    - 'scp '
+                    - 'rsync '
+                    - 'sftp '
+                filter:
+                    - '@'
+                    - ':'
+                condition: tools and filter
+            falsepositives:
+                - Legitimate administration activities
+            level: low
+        """)
+    ))
 
 # #generic test rule
 # print(bash_backend().convert(
 #         SigmaCollection.from_yaml("""
-#             title: Test
+#             title: Code Injection by ld.so Preload
+#             id: 7e3c4651-c347-40c4-b1d4-d48590fdf684
 #             status: test
+#             description: Detects the ld.so preload persistence file. See `man ld.so` for more information.
+#             references:
+#                 - https://man7.org/linux/man-pages/man8/ld.so.8.html
+#             author: Christian Burkard (Nextron Systems)
+#             date: 2021-05-05
+#             modified: 2022-10-09
+#             tags:
+#                 - attack.persistence
+#                 - attack.privilege-escalation
+#                 - attack.t1574.006
 #             logsource:
 #                 product: linux
-#                 service: test_category 
 #             detection:
-#                 sel:
-#                     fieldA: valueA
-#                     fieldB: valueB
-#                 condition: sel
+#                 keywords:
+#                     - '/etc/ld.so.preload'
+#                 condition: keywords
+#             falsepositives:
+#                 - Rare temporary workaround for library misconfiguration
+#             level: high
 #         """)
 #     ))
 
@@ -52,7 +96,7 @@
 #         """)
 #     ))
 
-# # syslog sigma rule
+# # # syslog sigma rule
 # print(bash_backend().convert(
 #         SigmaCollection.from_yaml("""
 #             title: Suspicious Named Error
