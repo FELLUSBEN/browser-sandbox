@@ -1,3 +1,4 @@
+from sigma.conditions import ConditionAND, ConditionOR
 from sigma.conversion.deferred import DeferredQueryExpression
 from sigma.conversion.state import ConversionState
 from sigma.processing.pipeline import ProcessingPipeline
@@ -126,19 +127,17 @@ class bashBackend(TextQueryBackend):
         ):
             return False
 
-        # Check if more than one argument is present
-        # if len(cond.args <= 1):
-        #    return False
-
         # All arguments of the given condition must reference a field
-        if not all((isinstance(arg, ConditionFieldEqualsValueExpression) for arg in cond.args)):
+        if not all((isinstance(arg, ConditionFieldEqualsValueExpression)  for arg in cond.args)) and not all((isinstance(arg, ConditionValueExpression)  for arg in cond.args)):
             return False
 
         # Build a set of all fields appearing in condition arguments
-        fields = {arg.field for arg in cond.args}
-        # All arguments must reference the same field
-        if not (len(fields) == 1 or len(fields) == 0):
-            return False
+        if isinstance(cond.args[0],ConditionFieldEqualsValueExpression):
+            fields = {arg.field for arg in cond.args}
+            # All arguments must reference the same field
+            if len(fields) != 1:
+                return False
+            
 
         # All argument values must be strings or numbers
         if not all([isinstance(arg.value, (SigmaString, SigmaNumber)) for arg in cond.args]):
@@ -157,6 +156,24 @@ class bashBackend(TextQueryBackend):
         # All checks passed, expression can be converted to in-expression
         return True
 
+    def convert_condition_as_in_expression(self, cond: Union[ConditionOR, ConditionAND], state: ConversionState) -> Union[str, DeferredQueryExpression]:
+        """Conversion of field in value list conditions."""
+        if isinstance(cond.args[0],ConditionFieldEqualsValueExpression):
+            return super().convert_condition_as_in_expression(cond, state)
+        else:
+            return self.field_in_list_expression.format(
+                field = '',
+                op = '',
+                list=self.list_separator.join(
+                    [
+                        self.convert_value_str(arg.value, state)
+                        if isinstance(arg.value, SigmaString)  # string escaping and qouting
+                        else str(arg.value)  # value is number
+                        for arg in cond.args
+                    ]
+                ),
+            )
+       
     def convert_condition(self, cond: ConditionOR | ConditionAND | ConditionNOT | ConditionFieldEqualsValueExpression | ConditionValueExpression, state: ConversionState) -> Any:
         return super().convert_condition(cond, state) + " " + str(cond.source.path) if cond.source and (not isinstance(cond,(ConditionAND,ConditionOR)) or (isinstance(cond,(ConditionAND,ConditionOR)) and self.decide_convert_condition_as_in_expression(cond, state))) else super().convert_condition(cond, state)
        
