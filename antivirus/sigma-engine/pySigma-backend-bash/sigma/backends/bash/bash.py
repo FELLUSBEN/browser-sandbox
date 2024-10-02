@@ -25,7 +25,7 @@ class bashBackend(TextQueryBackend):
     # Operator precedence: tuple of Condition{AND,OR,NOT} in order of precedence.
     # The backend generates grouping if required
     precedence : ClassVar[Tuple[ConditionItem, ConditionItem, ConditionItem]] = (ConditionNOT, ConditionAND, ConditionOR)
-    group_expression : ClassVar[str] = "< (grep {expr})"   # Expression for precedence override grouping as format string with {expr} placeholder
+    group_expression : ClassVar[str] = "< ( grep {expr} )"   # Expression for precedence override grouping as format string with {expr} placeholder
 
     # Generated query tokens
     token_separator : str = ""     # separator inserted between all boolean operators
@@ -98,10 +98,11 @@ class bashBackend(TextQueryBackend):
 
     # Field value in list, e.g. "field in (value list)" or "field containsall (value list)" 
     convert_or_as_in : ClassVar[bool] = True                     # Convert OR as in-expression
-    convert_and_as_in : ClassVar[bool] = False                   # Convert AND as in-expression 
+    convert_and_as_in : ClassVar[bool] = True                   # Convert AND as in-expression 
     in_expressions_allow_wildcards : ClassVar[bool] = True       # Values in list can contain wildcards. If set to False (default) only plain values are converted into in-expressions.
     field_in_list_expression : ClassVar[str] = "{field}{op}({list})"  # Expression for field in list of values as format string with placeholders {field}, {op} and {list}
     or_in_operator : ClassVar[str] = f"\\s?=\\s?"               # Operator used to convert OR into in-expressions. Must be set if convert_or_as_in is set
+    and_in_operator : ClassVar[str] = f"\\s?=\\s?"              # Operator used to convert and into in-expressions. Must be set if convert_and_as_in is set
     list_separator : ClassVar[str] = "|"               # List element separator
 
     # Value not bound to a field
@@ -117,6 +118,9 @@ class bashBackend(TextQueryBackend):
     def __init__(self, processing_pipeline: ProcessingPipeline | None = sigma.pipelines.bash.bash_pipeline(), collect_errors: bool = False):
         super().__init__(processing_pipeline, collect_errors)
     
+    def convert_condition(self, cond: ConditionOR | ConditionAND | ConditionNOT | ConditionFieldEqualsValueExpression | ConditionValueExpression, state: ConversionState) -> Any:
+        return super().convert_condition(cond, state) + " " + str(cond.source.path) if cond.source and (not isinstance(cond,(ConditionAND,ConditionOR)) or (isinstance(cond,(ConditionOR)) and self.decide_convert_condition_as_in_expression(cond, state))) else super().convert_condition(cond, state)
+    
     def decide_convert_condition_as_in_expression(self, cond: Union[ConditionOR, ConditionAND], state: ConversionState) -> bool: #TODO check if usfull to make the keyword exprression an as_in_expression
         # Check if conversion of condition type is enabled
         if (
@@ -128,7 +132,7 @@ class bashBackend(TextQueryBackend):
             return False
 
         # All arguments of the given condition must reference a field
-        if not all((isinstance(arg, ConditionFieldEqualsValueExpression)  for arg in cond.args)) and not all((isinstance(arg, ConditionValueExpression)  for arg in cond.args)):
+        if not all((isinstance(arg, ConditionFieldEqualsValueExpression) for arg in cond.args)) and not all((isinstance(arg, ConditionValueExpression)  for arg in cond.args)):
             return False
 
         # Build a set of all fields appearing in condition arguments
@@ -136,6 +140,11 @@ class bashBackend(TextQueryBackend):
             fields = {arg.field for arg in cond.args}
             # All arguments must reference the same field
             if len(fields) != 1:
+                return False
+        else:
+            parent = cond.args[0].parent
+            # All arguments must reference the same parent
+            if not all([parent == arg.parent for arg in cond.args]):
                 return False
             
 
@@ -159,25 +168,46 @@ class bashBackend(TextQueryBackend):
     def convert_condition_as_in_expression(self, cond: Union[ConditionOR, ConditionAND], state: ConversionState) -> Union[str, DeferredQueryExpression]:
         """Conversion of field in value list conditions."""
         if isinstance(cond.args[0],ConditionFieldEqualsValueExpression):
-            return super().convert_condition_as_in_expression(cond, state)
+            if isinstance(cond, ConditionAND):
+                field = self.escape_and_quote_field(cond.args[0].field)  # The assumption that the field is the same for all argument is valid because this is checked before
+                op = self.and_in_operator
+                values = [
+                    str(field + op + self.convert_value_str(arg.value, state))
+                    if isinstance(arg.value, SigmaString)  # string escaping and qouting
+                    else str(field + op + arg.value)  # value is number
+                    for arg in cond.args
+                ]
+                values[0] += " " + str(cond.source.path) if cond.source else None
+                return " | grep ".join(values)
+            
+            else:
+                return super().convert_condition_as_in_expression(cond, state)
+        
         else:
-            return self.field_in_list_expression.format(
-                field = '',
-                op = '',
-                list=self.list_separator.join(
-                    [
-                        self.convert_value_str(arg.value, state)
-                        if isinstance(arg.value, SigmaString)  # string escaping and qouting
-                        else str(arg.value)  # value is number
-                        for arg in cond.args
-                    ]
-                ),
-            )
+            if isinstance(cond, ConditionAND):
+                values = [
+                    str(self.convert_value_str(arg.value, state))
+                    if isinstance(arg.value, SigmaString)  # string escaping and qouting
+                    else str(arg.value)  # value is number
+                    for arg in cond.args
+                ]
+                values[0] += " " + str(cond.source.path) if cond.source else ''
+                return " | grep ".join(values)
+            
+            else:
+                return self.field_in_list_expression.format(
+                    field = '',
+                    op = '',
+                    list=self.list_separator.join(
+                        [
+                            self.convert_value_str(arg.value, state)
+                            if isinstance(arg.value, SigmaString)  # string escaping and qouting
+                            else str(arg.value)  # value is number
+                            for arg in cond.args
+                        ]
+                    ),
+                )
        
-    def convert_condition(self, cond: ConditionOR | ConditionAND | ConditionNOT | ConditionFieldEqualsValueExpression | ConditionValueExpression, state: ConversionState) -> Any:
-        return super().convert_condition(cond, state) + " " + str(cond.source.path) if cond.source and (not isinstance(cond,(ConditionAND,ConditionOR)) or (isinstance(cond,(ConditionAND,ConditionOR)) and self.decide_convert_condition_as_in_expression(cond, state))) else super().convert_condition(cond, state)
-       
-
     def finalize_query_default(self, rule: SigmaRule, query: str, index: int, state: ConversionState) -> str:
         # TODO: implement the per-query output for the output format {{ format }} here. Usually, the generated query is
         # embedded into a template, e.g. a JSON format with additional information from the Sigma rule.

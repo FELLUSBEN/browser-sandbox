@@ -4,10 +4,11 @@ from sigma.processing.transformations import AddConditionTransformation, FieldMa
 from sigma.processing.postprocessing import EmbedQueryTransformation
 from sigma.processing.conditions import LogsourceCondition, IncludeFieldCondition, ExcludeFieldCondition, RuleProcessingItemAppliedCondition, field_name_conditions, MatchStringCondition
 from sigma.processing.pipeline import ProcessingItem, ProcessingPipeline, QueryPostprocessingItem
-from sigma.rule import SigmaRule, SigmaDetection
+from sigma.rule import SigmaRule, SigmaDetection, SigmaDetectionItem
 from sigma.modifiers import SigmaGreaterThanEqualModifier,SigmaGreaterThanModifier,SigmaLessThanEqualModifier,SigmaLessThanModifier
 from sigma.conditions import *
 from sigma.types import *
+# from sigma.
 import sigma.backends.bash
 from sigma.conversion.state import ConversionState
 
@@ -18,7 +19,7 @@ from sigma.conversion.state import ConversionState
 linux_logsource_mapping = { # map all linux services to files
     "auditd":"/var/log/audit/audit.log",
     "auth":"/var/log/auth.log",
-    "clamav":"/var/log/ ", #By default, ClamAV on Ubuntu does not generate a log file. The output goes to stdout
+    "clamav":"/var/log/clamav/clamav.log", 
     "cron":"/var/log/syslog", #cron jobs and their outputs are typically logged by the syslog daemon, not in a dedicated cron log file. By default, these logs are routed to /var/log/syslog
     "guacamole":"/var/log/syslog", # Troubleshooting Guacamole usually boils down to checking either syslog or your servlet container’s logs (likely Tomcat). Please note that the exact locations and commands might vary depending on your specific Ubuntu configuration
     "modsecurity":"/var/log/apache2/modsec_audit.log",
@@ -29,15 +30,22 @@ linux_logsource_mapping = { # map all linux services to files
     None:"/var/log/syslog"
 }
 
+def append_detection_items(d: SigmaDetection, list:list[SigmaDetection]) -> None:
+    if isinstance(d,SigmaDetectionItem):
+        return list.append(d)
+    
+    for di in d.detection_items:
+        append_detection_items(di,list)
+        
+
 def add_path_to_grep(cond: ConditionOR | ConditionAND | ConditionNOT | ConditionFieldEqualsValueExpression | ConditionValueExpression, path: str, detection_items: list[SigmaDetection]) -> SigmaCondition:
     if not hasattr(add_path_to_grep, 'counter'):
         add_path_to_grep.counter = 0
 
-    if isinstance(cond,ConditionAND):
+    if isinstance(cond,ConditionAND) and not sigma.backends.bash.bashBackend().decide_convert_condition_as_in_expression(cond, ConversionState()):
         add_path_to_grep(cond.args[0], path, detection_items)
         for arg in cond.args[1:]:
-            answer = sigma.backends.bash.bashBackend().compare_precedence(cond, arg) and not isinstance(arg, ConditionAND)
-            add_path_to_grep(arg, None, detection_items) if sigma.backends.bash.bashBackend().compare_precedence(cond, arg) and not(isinstance(arg,ConditionNOT) and arg.args) else add_path_to_grep(arg, path, detection_items) #add_path_to_grep(arg, path, detection_items) if answer else add_path_to_grep(arg, None, detection_items) #
+            add_path_to_grep(arg, None, detection_items) if sigma.backends.bash.bashBackend().compare_precedence(cond, arg) and not(isinstance(arg,ConditionNOT) and not(len(arg.args) == 1 and isinstance(arg.args[0],(ConditionFieldEqualsValueExpression,ConditionValueExpression)))) else add_path_to_grep(arg, path, detection_items) #add_path_to_grep(arg, path, detection_items) if answer else add_path_to_grep(arg, None, detection_items) #
     elif isinstance(cond,ConditionOR) and not sigma.backends.bash.bashBackend().decide_convert_condition_as_in_expression(cond, ConversionState()):
         for arg in cond.args:
             add_path_to_grep(arg, path, detection_items)
@@ -149,32 +157,49 @@ class PromoteDetectionItemTransformation(Transformation):
         super().apply(pipeline, rule)
         
         detection_items = []
-        [[detection_items.append(di) for di in dv.detection_items] for dv in rule.detection.detections.values()]
+        [[detection_items.append(di) if isinstance(di,SigmaDetectionItem) else append_detection_items(di, detection_items) for di in dv.detection_items] for dv in rule.detection.detections.values()]
         
         for pc in rule.detection.parsed_condition:
             # add_path_to_grep.counter = 0 #TODO might be good idea to add in order to prevent moving error
             add_path_to_grep(pc.parsed, rule.logsource.service, detection_items)
 
-        for detection in rule.detection.detections.values():
-            for detection_item in detection.detection_items:
-                if SigmaGreaterThanEqualModifier in detection_item.modifiers:
-                    setattr(detection_item, "value", [SigmaString('(' + str(generate_greater_equals_regex(detection_item.value[0].number.number)) + ')')])
-                    detection_item.modifiers.remove(SigmaGreaterThanEqualModifier)
-                    return
-                if SigmaGreaterThanModifier in detection_item.modifiers:
-                    setattr(detection_item, "value", [SigmaString('(' + str(generate_greater_than_regex(detection_item.value[0].number.number)) + ')')])
-                    detection_item.modifiers.remove(SigmaGreaterThanModifier)
-                    return
-                if SigmaLessThanEqualModifier in detection_item.modifiers:
-                    setattr(detection_item, "value", [SigmaString('(' + str(generate_less_equals_regex(detection_item.value[0].number.number)) + ')')])
-                    detection_item.modifiers.remove(SigmaLessThanEqualModifier)
-                    return
-                if SigmaLessThanModifier in detection_item.modifiers:
-                    setattr(detection_item, "value", [SigmaString('(' + str(generate_less_than_regex(detection_item.value[0].number.number)) + ')')])
-                    detection_item.modifiers.remove(SigmaLessThanModifier)
-                    return
+        for detection_item in detection_items:
+            if SigmaGreaterThanEqualModifier in detection_item.modifiers:
+                setattr(detection_item, "value", [SigmaString('(' + str(generate_greater_equals_regex(detection_item.value[0].number.number)) + ')')])
+                detection_item.modifiers.remove(SigmaGreaterThanEqualModifier)
+                return
+            if SigmaGreaterThanModifier in detection_item.modifiers:
+                setattr(detection_item, "value", [SigmaString('(' + str(generate_greater_than_regex(detection_item.value[0].number.number)) + ')')])
+                detection_item.modifiers.remove(SigmaGreaterThanModifier)
+                return
+            if SigmaLessThanEqualModifier in detection_item.modifiers:
+                setattr(detection_item, "value", [SigmaString('(' + str(generate_less_equals_regex(detection_item.value[0].number.number)) + ')')])
+                detection_item.modifiers.remove(SigmaLessThanEqualModifier)
+                return
+            if SigmaLessThanModifier in detection_item.modifiers:
+                setattr(detection_item, "value", [SigmaString('(' + str(generate_less_than_regex(detection_item.value[0].number.number)) + ')')])
+                detection_item.modifiers.remove(SigmaLessThanModifier)
+                return
+        # for detection in rule.detection.detections.values():
+        #     for detection_item in detection.detection_items:
+        #         if SigmaGreaterThanEqualModifier in detection_item.modifiers:
+        #             setattr(detection_item, "value", [SigmaString('(' + str(generate_greater_equals_regex(detection_item.value[0].number.number)) + ')')])
+        #             detection_item.modifiers.remove(SigmaGreaterThanEqualModifier)
+        #             return
+        #         if SigmaGreaterThanModifier in detection_item.modifiers:
+        #             setattr(detection_item, "value", [SigmaString('(' + str(generate_greater_than_regex(detection_item.value[0].number.number)) + ')')])
+        #             detection_item.modifiers.remove(SigmaGreaterThanModifier)
+        #             return
+        #         if SigmaLessThanEqualModifier in detection_item.modifiers:
+        #             setattr(detection_item, "value", [SigmaString('(' + str(generate_less_equals_regex(detection_item.value[0].number.number)) + ')')])
+        #             detection_item.modifiers.remove(SigmaLessThanEqualModifier)
+        #             return
+        #         if SigmaLessThanModifier in detection_item.modifiers:
+        #             setattr(detection_item, "value", [SigmaString('(' + str(generate_less_than_regex(detection_item.value[0].number.number)) + ')')])
+        #             detection_item.modifiers.remove(SigmaLessThanModifier)
+        #             return
                 
-                # setattr(detection_item, "value", [SigmaString('(' + str(val) + ')') for val in detection_item.value]) #TODO: check if needed(if not needed, change the above setattr)(if needed might be better off in a postproccessing pipline becase of interapting modifiers like re)
+        #         # setattr(detection_item, "value", [SigmaString('(' + str(val) + ')') for val in detection_item.value]) #TODO: check if needed(if not needed, change the above setattr)(if needed might be better off in a postproccessing pipline becase of interapting modifiers like re)
 
 
 # pipelins

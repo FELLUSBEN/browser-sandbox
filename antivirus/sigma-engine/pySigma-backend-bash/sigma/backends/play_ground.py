@@ -7,62 +7,73 @@ def bash_backend():
 #generic test rule
 print(bash_backend().convert(
         SigmaCollection.from_yaml("""
-            title: Remote File Copy
-            id: 7a14080d-a048-4de8-ae58-604ce58a795b
-            status: stable
-            description: Detects the use of tools that copy files from or to remote systems
+            title: Linux Base64 Encoded Pipe to Shell
+            id: ba592c6d-6888-43c3-b8c6-689b8fe47337
+            status: test
+            description: Detects suspicious process command line that uses base64 encoded input for execution with a shell
             references:
-                - https://attack.mitre.org/techniques/T1105/
-            author: Ömer Günal
-            date: 2020-06-18
+                - https://github.com/arget13/DDexec
+                - https://www.mandiant.com/resources/blog/barracuda-esg-exploited-globally
+            author: pH-T (Nextron Systems)
+            date: 2022-07-26
+            modified: 2023-06-16
             tags:
-                - attack.command-and-control
-                - attack.lateral-movement
-                - attack.t1105
+                - attack.defense-evasion
+                - attack.t1140
             logsource:
                 product: linux
+                category: process_creation
             detection:
-                tools:
-                    - 'scp '
-                    - 'rsync '
-                    - 'sftp '
-                filter:
-                    - '@'
-                    - ':'
-                condition: tools and filter
+                selection_base64:
+                    CommandLine|contains: 'base64 '
+                selection_exec:
+                    - CommandLine|contains:
+                        - '| bash '
+                        - '| sh '
+                        - '|bash '
+                        - '|sh '
+                    - CommandLine|endswith:
+                        - ' |sh'
+                        - '| bash'
+                        - '| sh'
+                        - '|bash'
+                condition: all of selection_*
             falsepositives:
                 - Legitimate administration activities
-            level: low
+            level: medium
         """)
     ))
 
-# #generic test rule
-# print(bash_backend().convert(
-#         SigmaCollection.from_yaml("""
-#             title: Code Injection by ld.so Preload
-#             id: 7e3c4651-c347-40c4-b1d4-d48590fdf684
-#             status: test
-#             description: Detects the ld.so preload persistence file. See `man ld.so` for more information.
-#             references:
-#                 - https://man7.org/linux/man-pages/man8/ld.so.8.html
-#             author: Christian Burkard (Nextron Systems)
-#             date: 2021-05-05
-#             modified: 2022-10-09
-#             tags:
-#                 - attack.persistence
-#                 - attack.privilege-escalation
-#                 - attack.t1574.006
-#             logsource:
-#                 product: linux
-#             detection:
-#                 keywords:
-#                     - '/etc/ld.so.preload'
-#                 condition: keywords
-#             falsepositives:
-#                 - Rare temporary workaround for library misconfiguration
-#             level: high
-#         """)
-#     ))
+#generic test rule
+print(bash_backend().convert(
+        SigmaCollection.from_yaml("""
+            title: Capabilities Discovery - Linux
+            id: d8d97d51-122d-4cdd-9e2f-01b4b4933530
+            status: test
+            description: Detects usage of "getcap" binary. This is often used during recon activity to determine potential binaries that can be abused as GTFOBins or other.
+            references:
+                - https://github.com/SaiSathvik1/Linux-Privilege-Escalation-Notes
+                - https://github.com/carlospolop/PEASS-ng
+                - https://github.com/diego-treitos/linux-smart-enumeration
+            author: Nasreddine Bencherchali (Nextron Systems)
+            date: 2022-12-28
+            modified: 2024-03-05
+            tags:
+                - attack.discovery
+                - attack.t1083
+            logsource:
+                category: process_creation
+                product: linux
+            detection:
+                selection:
+                    Image|endswith: '/getcap'
+                    CommandLine|contains|windash: ' -r '
+                condition: selection
+            falsepositives:
+                - Unknown
+            level: low
+        """)
+    ))
 
 # # audit log sigma rule
 # print(bash_backend().convert(
