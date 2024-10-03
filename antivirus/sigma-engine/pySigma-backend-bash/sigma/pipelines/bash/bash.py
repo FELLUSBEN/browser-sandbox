@@ -47,7 +47,7 @@ def add_path_to_grep(cond: ConditionOR | ConditionAND | ConditionNOT | Condition
         for arg in cond.args[1:]:
             add_path_to_grep(arg, None, detection_items) if sigma.backends.bash.bashBackend().compare_precedence(cond, arg) and not(isinstance(arg,ConditionNOT) and not(len(arg.args) == 1 and isinstance(arg.args[0],(ConditionFieldEqualsValueExpression,ConditionValueExpression)))) else add_path_to_grep(arg, path, detection_items) #add_path_to_grep(arg, path, detection_items) if answer else add_path_to_grep(arg, None, detection_items) #
     elif isinstance(cond,ConditionOR) and not sigma.backends.bash.bashBackend().decide_convert_condition_as_in_expression(cond, ConversionState()):
-        for arg in cond.args:
+        for arg in cond.args: #TODO might not need that loop
             add_path_to_grep(arg, path, detection_items)
     elif isinstance(cond,ConditionNOT):
         for arg in cond.args:
@@ -160,25 +160,29 @@ class PromoteDetectionItemTransformation(Transformation):
         [[detection_items.append(di) if isinstance(di,SigmaDetectionItem) else append_detection_items(di, detection_items) for di in dv.detection_items] for dv in rule.detection.detections.values()]
         
         for pc in rule.detection.parsed_condition:
-            # add_path_to_grep.counter = 0 #TODO might be good idea to add in order to prevent moving error
+            add_path_to_grep.counter = 0 #TODO make it a comment for better debaging becaos it cose alot of problem
             add_path_to_grep(pc.parsed, rule.logsource.service, detection_items)
 
         for detection_item in detection_items:
             if SigmaGreaterThanEqualModifier in detection_item.modifiers:
-                setattr(detection_item, "value", [SigmaString('(' + str(generate_greater_equals_regex(detection_item.value[0].number.number)) + ')')])
+                setattr(detection_item, "value", [SigmaRegularExpression(generate_greater_equals_regex(detection_item.value[0].number.number))])
                 detection_item.modifiers.remove(SigmaGreaterThanEqualModifier)
+                detection_item.modifiers.append(SigmaRegularExpression)
                 return
             if SigmaGreaterThanModifier in detection_item.modifiers:
-                setattr(detection_item, "value", [SigmaString('(' + str(generate_greater_than_regex(detection_item.value[0].number.number)) + ')')])
+                setattr(detection_item, "value", [SigmaRegularExpression(generate_greater_than_regex(detection_item.value[0].number.number))])
                 detection_item.modifiers.remove(SigmaGreaterThanModifier)
+                detection_item.modifiers.append(SigmaRegularExpression)
                 return
             if SigmaLessThanEqualModifier in detection_item.modifiers:
-                setattr(detection_item, "value", [SigmaString('(' + str(generate_less_equals_regex(detection_item.value[0].number.number)) + ')')])
+                setattr(detection_item, "value", [SigmaRegularExpression(generate_less_equals_regex(detection_item.value[0].number.number))])
                 detection_item.modifiers.remove(SigmaLessThanEqualModifier)
+                detection_item.modifiers.append(SigmaRegularExpression)
                 return
             if SigmaLessThanModifier in detection_item.modifiers:
-                setattr(detection_item, "value", [SigmaString('(' + str(generate_less_than_regex(detection_item.value[0].number.number)) + ')')])
+                setattr(detection_item, "value", [SigmaRegularExpression(generate_less_than_regex(detection_item.value[0].number.number))])
                 detection_item.modifiers.remove(SigmaLessThanModifier)
+                detection_item.modifiers.append(SigmaRegularExpression)
                 return
         # for detection in rule.detection.detections.values():
         #     for detection_item in detection.detection_items:

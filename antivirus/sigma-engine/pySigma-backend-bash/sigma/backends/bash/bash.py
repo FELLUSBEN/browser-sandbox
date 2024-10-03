@@ -65,7 +65,7 @@ class bashBackend(TextQueryBackend):
     re_expression : ClassVar[str] = "{field}\\s?=\\s?{regex}{flag_i}"
     re_escape_char : ClassVar[str] = "\\"               # Character used for escaping in regular expressions
     re_escape : ClassVar[Tuple[str]] = ()               # List of strings that are escaped 
-    re_escape_escape_char : bool = True                 # If True, the escape character is also escaped
+    re_escape_escape_char : bool = False                 # If True, the escape character is also escaped
     re_flag_prefix : bool = True                       # If True, the flags are prepended as (?x) group at the beginning of the regular expression, e.g. (?i). If this is not supported by the target, it should be set to False. # TODO:needs ferther inspection
     
     # Mapping from SigmaRegularExpressionFlag values to static string templates that are used in

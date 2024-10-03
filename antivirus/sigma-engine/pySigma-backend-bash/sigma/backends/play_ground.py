@@ -4,76 +4,159 @@ from sigma.backends.bash import bashBackend
 def bash_backend():
     return bashBackend()
 
-#generic test rule
-print(bash_backend().convert(
-        SigmaCollection.from_yaml("""
-            title: Linux Base64 Encoded Pipe to Shell
-            id: ba592c6d-6888-43c3-b8c6-689b8fe47337
-            status: test
-            description: Detects suspicious process command line that uses base64 encoded input for execution with a shell
-            references:
-                - https://github.com/arget13/DDexec
-                - https://www.mandiant.com/resources/blog/barracuda-esg-exploited-globally
-            author: pH-T (Nextron Systems)
-            date: 2022-07-26
-            modified: 2023-06-16
-            tags:
-                - attack.defense-evasion
-                - attack.t1140
-            logsource:
-                product: linux
-                category: process_creation
-            detection:
-                selection_base64:
-                    CommandLine|contains: 'base64 '
-                selection_exec:
-                    - CommandLine|contains:
-                        - '| bash '
-                        - '| sh '
-                        - '|bash '
-                        - '|sh '
-                    - CommandLine|endswith:
-                        - ' |sh'
-                        - '| bash'
-                        - '| sh'
-                        - '|bash'
-                condition: all of selection_*
-            falsepositives:
-                - Legitimate administration activities
-            level: medium
-        """)
-    ))
+# #generic test rule # #TODO make the next rule work in the future - the problem is that convert_as_in dosn't work on cidr, make it work!!!
+# print(bash_backend().convert(
+#         SigmaCollection.from_yaml("""
+#             title: Potentially Suspicious Malware Callback Communication - Linux
+#             id: dbfc7c98-04ab-4ab7-aa94-c74d22aa7376
+#             # related:
+#             #     - id: 4b89abaa-99fe-4232-afdd-8f9aa4d20382
+#             #     type: derived
+#             status: experimental
+#             description: |
+#                 Detects programs that connect to known malware callback ports based on threat intelligence reports.
+#             references:
+#                 - https://www.mandiant.com/resources/blog/triton-actor-ttp-profile-custom-attack-tools-detections
+#                 - https://www.mandiant.com/resources/blog/ukraine-and-sandworm-team
+#                 - https://www.elastic.co/guide/en/security/current/potential-non-standard-port-ssh-connection.html
+#                 - https://thehackernews.com/2024/01/systembc-malwares-c2-server-analysis.html
+#                 - https://www.cybereason.com/blog/sliver-c2-leveraged-by-many-threat-actors
+#             author: hasselj
+#             date: 2024-05-10
+#             tags:
+#                 - attack.persistence
+#                 - attack.command-and-control
+#                 - attack.t1571
+#             logsource:
+#                 category: network_connection
+#                 product: linux
+#             detection:
+#                 selection:
+#                     Initiated: 'true'
+#                     DestinationPort:
+#                         - 888
+#                         - 999
+#                         - 2200
+#                         - 2222
+#                         - 4000
+#                         - 4444
+#                         - 6789
+#                         - 8531
+#                         - 50501
+#                         - 51820
+#                 filter_main_local_ranges:
+#                     DestinationIp|cidr:
+#                         - '127.0.0.0/8'
+#                         - '10.0.0.0/8'
+#                         - '172.16.0.0/12'
+#                         - '192.168.0.0/16'
+#                         - '169.254.0.0/16'
+#                         - '::1/128'         # IPv6 loopback
+#                         - 'fe80::/10'       # IPv6 link-local addresses
+#                         - 'fc00::/7'        # IPv6 private addresses
+#                 condition: selection and not 1 of filter_main_*
+#             falsepositives:
+#                 - Unknown
+#             level: high
+#         """)
+#     ))
 
-#generic test rule
-print(bash_backend().convert(
-        SigmaCollection.from_yaml("""
-            title: Capabilities Discovery - Linux
-            id: d8d97d51-122d-4cdd-9e2f-01b4b4933530
-            status: test
-            description: Detects usage of "getcap" binary. This is often used during recon activity to determine potential binaries that can be abused as GTFOBins or other.
-            references:
-                - https://github.com/SaiSathvik1/Linux-Privilege-Escalation-Notes
-                - https://github.com/carlospolop/PEASS-ng
-                - https://github.com/diego-treitos/linux-smart-enumeration
-            author: Nasreddine Bencherchali (Nextron Systems)
-            date: 2022-12-28
-            modified: 2024-03-05
-            tags:
-                - attack.discovery
-                - attack.t1083
-            logsource:
-                category: process_creation
-                product: linux
-            detection:
-                selection:
-                    Image|endswith: '/getcap'
-                    CommandLine|contains|windash: ' -r '
-                condition: selection
-            falsepositives:
-                - Unknown
-            level: low
-        """)
-    ))
+# #generic test rule
+# print(bash_backend().convert(
+#         SigmaCollection.from_yaml("""
+#             title: Shell Invocation via Apt - Linux
+#             id: bb382fd5-b454-47ea-a264-1828e4c766d6
+#             status: test
+#             description: |
+#                 Detects the use of the "apt" and "apt-get" commands to execute a shell or proxy commands.
+#                 Such behavior may be associated with privilege escalation, unauthorized command execution, or to break out from restricted environments.
+#             references:
+#                 - https://gtfobins.github.io/gtfobins/apt/
+#                 - https://gtfobins.github.io/gtfobins/apt-get/
+#             author: Nasreddine Bencherchali (Nextron Systems)
+#             date: 2022-12-28
+#             modified: 2024-09-02
+#             tags:
+#                 - attack.discovery
+#                 - attack.t1083
+#             logsource:
+#                 category: process_creation
+#                 product: linux
+#             detection:
+#                 selection:
+#                     Image|endswith:
+#                         - '/apt'
+#                         - '/apt-get'
+#                     CommandLine|contains: 'APT::Update::Pre-Invoke::='
+#                 condition: selection
+#             falsepositives:
+#                 - Unknown
+#             level: medium
+#         """)
+#     ))
+
+# #generic test rule
+# print(bash_backend().convert(
+#         SigmaCollection.from_yaml("""
+#             title: Scheduled Task/Job At
+#             id: d2d642d7-b393-43fe-bae4-e81ed5915c4b
+#             status: stable
+#             description: |
+#                 Detects the use of at/atd which are utilities that are used to schedule tasks.
+#                 They are often abused by adversaries to maintain persistence or to perform task scheduling for initial or recurring execution of malicious code
+#             references:
+#                 - https://github.com/redcanaryco/atomic-red-team/blob/f339e7da7d05f6057fdfcdd3742bfcf365fee2a9/atomics/T1053.002/T1053.002.md
+#             author: Ömer Günal, oscd.community
+#             date: 2020-10-06
+#             modified: 2022-07-07
+#             tags:
+#                 - attack.persistence
+#                 - attack.t1053.002
+#             logsource:
+#                 product: linux
+#                 category: process_creation
+#             detection:
+#                 selection:
+#                     Image|endswith:
+#                         - '/at'
+#                         - '/atd'
+#                 condition: selection
+#             falsepositives:
+#                 - Legitimate administration activities
+#             level: low
+#         """)
+#     ))
+
+# #TODO make the next rule work in the future - the problem is the windash modifier but the rule is desinde for linux so you should make it work.
+# print(bash_backend().convert(
+#         SigmaCollection.from_yaml("""
+#             title: Capabilities Discovery - Linux
+#             id: d8d97d51-122d-4cdd-9e2f-01b4b4933530
+#             status: test
+#             description: Detects usage of "getcap" binary. This is often used during recon activity to determine potential binaries that can be abused as GTFOBins or other.
+#             references:
+#                 - https://github.com/SaiSathvik1/Linux-Privilege-Escalation-Notes
+#                 - https://github.com/carlospolop/PEASS-ng
+#                 - https://github.com/diego-treitos/linux-smart-enumeration
+#             author: Nasreddine Bencherchali (Nextron Systems)
+#             date: 2022-12-28
+#             modified: 2024-03-05
+#             tags:
+#                 - attack.discovery
+#                 - attack.t1083
+#             logsource:
+#                 category: process_creation
+#                 product: linux
+#             detection:
+#                 selection:
+#                     Image|endswith: '/getcap'
+#                     CommandLine|contains|windash: ' -r '
+#                 condition: selection
+#             falsepositives:
+#                 - Unknown
+#             level: low
+#         """)
+#     ))
 
 # # audit log sigma rule
 # print(bash_backend().convert(
@@ -204,5 +287,5 @@ print(bash_backend().convert(
 #                 - Unlikely
 #             level: critical
 #         """)
-#     )) #check if * means literly * or its regex
+#     )) 
 
