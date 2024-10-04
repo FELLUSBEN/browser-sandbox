@@ -8,7 +8,6 @@ from sigma.rule import SigmaRule, SigmaDetection, SigmaDetectionItem
 from sigma.modifiers import SigmaGreaterThanEqualModifier,SigmaGreaterThanModifier,SigmaLessThanEqualModifier,SigmaLessThanModifier
 from sigma.conditions import *
 from sigma.types import *
-# from sigma.
 import sigma.backends.bash
 from sigma.conversion.state import ConversionState
 
