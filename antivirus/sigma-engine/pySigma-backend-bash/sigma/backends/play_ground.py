@@ -64,30 +64,26 @@ def bash_backend():
 # #generic test rule
 # print(bash_backend().convert(
 #         SigmaCollection.from_yaml("""
-#             title: Shell Invocation via Apt - Linux
-#             id: bb382fd5-b454-47ea-a264-1828e4c766d6
+#             title: Potential Xterm Reverse Shell
+#             id: 4e25af4b-246d-44ea-8563-e42aacab006b
 #             status: test
-#             description: |
-#                 Detects the use of the "apt" and "apt-get" commands to execute a shell or proxy commands.
-#                 Such behavior may be associated with privilege escalation, unauthorized command execution, or to break out from restricted environments.
+#             description: Detects usage of "xterm" as a potential reverse shell tunnel
 #             references:
-#                 - https://gtfobins.github.io/gtfobins/apt/
-#                 - https://gtfobins.github.io/gtfobins/apt-get/
-#             author: Nasreddine Bencherchali (Nextron Systems)
-#             date: 2022-12-28
-#             modified: 2024-09-02
+#                 - https://pentestmonkey.net/cheat-sheet/shells/reverse-shell-cheat-sheet
+#                 - https://www.revshells.com/
+#             author: '@d4ns4n_'
+#             date: 2023-04-24
 #             tags:
-#                 - attack.discovery
-#                 - attack.t1083
+#                 - attack.execution
+#                 - attack.t1059
 #             logsource:
 #                 category: process_creation
 #                 product: linux
 #             detection:
 #                 selection:
-#                     Image|endswith:
-#                         - '/apt'
-#                         - '/apt-get'
-#                     CommandLine|contains: 'APT::Update::Pre-Invoke::='
+#                     Image|contains: 'xterm'
+#                     CommandLine|contains: '-display'
+#                     CommandLine|endswith: ':1'
 #                 condition: selection
 #             falsepositives:
 #                 - Unknown
