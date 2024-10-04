@@ -18,7 +18,6 @@ class bashBackend(TextQueryBackend):
         "default": "grep commands",
     }
 
-
     requires_pipeline : bool = True
     preprocessing_pipelin : sigma.pipelines.bash.bash_pipeline
 

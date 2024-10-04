@@ -183,6 +183,7 @@ class PromoteDetectionItemTransformation(Transformation):
                 detection_item.modifiers.remove(SigmaLessThanModifier)
                 detection_item.modifiers.append(SigmaRegularExpression)
                 return
+                
         # for detection in rule.detection.detections.values():
         #     for detection_item in detection.detection_items:
         #         if SigmaGreaterThanEqualModifier in detection_item.modifiers:
@@ -210,7 +211,7 @@ def bash_pipeline() -> ProcessingPipeline:
     return ProcessingPipeline(
         name = "Bash pipeline",
         allowed_backends={"bash"},# Set of identifiers of backends (from the backends mapping) that are allowed to use this processing pipeline. This can be used by frontends like Sigma CLI to warn the user about inappropriate usage.
-        priority=50,            # The priority defines the order pipelines are applied. See documentation for common values.
+        priority = 50,            # The priority defines the order pipelines are applied. See documentation for common values.
 
         items = [
             ProcessingItem(

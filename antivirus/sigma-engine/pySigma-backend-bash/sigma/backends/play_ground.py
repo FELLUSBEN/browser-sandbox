@@ -61,70 +61,66 @@ def bash_backend():
 #         """)
 #     ))
 
-#generic test rule
+# # generic test rule
 # print(bash_backend().convert(
 #         SigmaCollection.from_yaml("""
-#             title: Webshell Remote Command Execution
-#             id: c0d3734d-330f-4a03-aae2-65dacc6a8222
+#             title: Triple Cross eBPF Rootkit Default Persistence
+#             id: 1a2ea919-d11d-4d1e-8535-06cda13be20f
 #             status: test
-#             description: Detects possible command execution by web application/web shell
+#             description: Detects the creation of "ebpfbackdoor" files in both "cron.d" and "sudoers.d" directories. Which both are related to the TripleCross persistence method
 #             references:
-#                 - Personal Experience of the Author
-#             author: Ilyas Ochkov, Beyu Denis, oscd.community
-#             date: 2019-10-12
-#             modified: 2022-12-25
+#                 - https://github.com/h3xduck/TripleCross/blob/12629558b8b0a27a5488a0b98f1ea7042e76f8ab/apps/deployer.sh
+#             author: Nasreddine Bencherchali (Nextron Systems)
+#             date: 2022-07-05
+#             modified: 2022-12-31
 #             tags:
 #                 - attack.persistence
-#                 - attack.t1505.003
+#                 - attack.defense-evasion
+#                 - attack.t1053.003
+
 #             logsource:
 #                 product: linux
-#                 service: auditd
+#                 category: file_event
 #             detection:
 #                 selection:
-#                     # You need to add to the following rules to your auditd.conf config:
-#                     #   -a always,exit -F arch=b32 -S execve -F euid=33 -k detect_execve_www
-#                     #   -a always,exit -F arch=b64 -S execve -F euid=33 -k detect_execve_www
-#                     # Change the number "33" to the ID of your WebServer user. Default: www-data:x:33:33
-#                     type: 'SYSCALL'
-#                     syscall: 'execve'
-#                     key: 'detect_execve_www'
+#                     TargetFilename|endswith: 'ebpfbackdoor'
 #                 condition: selection
 #             falsepositives:
-#                 - Admin activity
-#                 - Crazy web applications
-#             level: critical
+#                 - Unlikely
+#             level: high
 #         """)
 #     ))
 
 # #generic test rule
 # print(bash_backend().convert(
 #         SigmaCollection.from_yaml("""
-#             title: Scheduled Task/Job At
-#             id: d2d642d7-b393-43fe-bae4-e81ed5915c4b
-#             status: stable
-#             description: |
-#                 Detects the use of at/atd which are utilities that are used to schedule tasks.
-#                 They are often abused by adversaries to maintain persistence or to perform task scheduling for initial or recurring execution of malicious code
+#             title: Wget Creating Files in Tmp Directory
+#             id: 35a05c60-9012-49b6-a11f-6bab741c9f74
+#             status: test
+#             description: Detects the use of wget to download content in a temporary directory such as "/tmp" or "/var/tmp"
 #             references:
-#                 - https://github.com/redcanaryco/atomic-red-team/blob/f339e7da7d05f6057fdfcdd3742bfcf365fee2a9/atomics/T1053.002/T1053.002.md
-#             author: Ömer Günal, oscd.community
-#             date: 2020-10-06
-#             modified: 2022-07-07
+#                 - https://blogs.jpcert.or.jp/en/2023/05/gobrat.html
+#                 - https://jstnk9.github.io/jstnk9/research/GobRAT-Malware/
+#                 - https://www.virustotal.com/gui/file/60bcd645450e4c846238cf0e7226dc40c84c96eba99f6b2cffcd0ab4a391c8b3/detection
+#                 - https://www.virustotal.com/gui/file/3e44c807a25a56f4068b5b8186eee5002eed6f26d665a8b791c472ad154585d1/detection
+#             author: Joseliyo Sanchez, @Joseliyo_Jstnk
+#             date: 2023-06-02
 #             tags:
-#                 - attack.persistence
-#                 - attack.t1053.002
+#                 - attack.command-and-control
+#                 - attack.t1105
 #             logsource:
 #                 product: linux
-#                 category: process_creation
+#                 category: file_event
 #             detection:
 #                 selection:
-#                     Image|endswith:
-#                         - '/at'
-#                         - '/atd'
+#                     Image|endswith: '/wget'
+#                     TargetFilename|startswith:
+#                         - '/tmp/'
+#                         - '/var/tmp/'
 #                 condition: selection
 #             falsepositives:
-#                 - Legitimate administration activities
-#             level: low
+#                 - Legitimate downloads of files in the tmp folder.
+#             level: medium
 #         """)
 #     ))
 
