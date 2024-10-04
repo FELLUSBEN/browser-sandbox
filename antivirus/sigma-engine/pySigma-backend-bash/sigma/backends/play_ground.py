@@ -61,33 +61,38 @@ def bash_backend():
 #         """)
 #     ))
 
-# #generic test rule
+#generic test rule
 # print(bash_backend().convert(
 #         SigmaCollection.from_yaml("""
-#             title: Potential Xterm Reverse Shell
-#             id: 4e25af4b-246d-44ea-8563-e42aacab006b
+#             title: Webshell Remote Command Execution
+#             id: c0d3734d-330f-4a03-aae2-65dacc6a8222
 #             status: test
-#             description: Detects usage of "xterm" as a potential reverse shell tunnel
+#             description: Detects possible command execution by web application/web shell
 #             references:
-#                 - https://pentestmonkey.net/cheat-sheet/shells/reverse-shell-cheat-sheet
-#                 - https://www.revshells.com/
-#             author: '@d4ns4n_'
-#             date: 2023-04-24
+#                 - Personal Experience of the Author
+#             author: Ilyas Ochkov, Beyu Denis, oscd.community
+#             date: 2019-10-12
+#             modified: 2022-12-25
 #             tags:
-#                 - attack.execution
-#                 - attack.t1059
+#                 - attack.persistence
+#                 - attack.t1505.003
 #             logsource:
-#                 category: process_creation
 #                 product: linux
+#                 service: auditd
 #             detection:
 #                 selection:
-#                     Image|contains: 'xterm'
-#                     CommandLine|contains: '-display'
-#                     CommandLine|endswith: ':1'
+#                     # You need to add to the following rules to your auditd.conf config:
+#                     #   -a always,exit -F arch=b32 -S execve -F euid=33 -k detect_execve_www
+#                     #   -a always,exit -F arch=b64 -S execve -F euid=33 -k detect_execve_www
+#                     # Change the number "33" to the ID of your WebServer user. Default: www-data:x:33:33
+#                     type: 'SYSCALL'
+#                     syscall: 'execve'
+#                     key: 'detect_execve_www'
 #                 condition: selection
 #             falsepositives:
-#                 - Unknown
-#             level: medium
+#                 - Admin activity
+#                 - Crazy web applications
+#             level: critical
 #         """)
 #     ))
 
