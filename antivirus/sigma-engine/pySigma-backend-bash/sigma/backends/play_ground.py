@@ -25,9 +25,56 @@ file_paths = [str(file) for file in file_paths]
 file_paths.remove("C:/Users/razic/Downloads/linux/desktop.ini")
 file_paths.remove("C:/Users/razic/Downloads/linux/process_creation/desktop.ini")
 
-print(bash_backend().convert(
-    SigmaCollection.load_ruleset(file_paths[0:], on_load=del_path)
-))
+rules = SigmaCollection.load_ruleset(file_paths[0:], on_load=del_path)
+critical_rules = []
+high_rules = []
+medium_rules = []
+low_rules = []
+informational_rules = []
+
+# Iterate over the rules and append to the corresponding list based on the level
+for rule in rules:
+    level = rule.level.name.lower()  # Get the level of the rule
+
+    if level == 'critical':
+        critical_rules.append(rule)
+    elif level == 'high':
+        high_rules.append(rule)
+    elif level == 'medium':
+        medium_rules.append(rule)
+    elif level == 'low':
+        low_rules.append(rule)
+    elif level == 'informational':
+        informational_rules.append(rule)
+
+ # Define the levels
+        levels = ['critical', 'high', 'medium', 'low', 'informational']
+
+        # Define the directory where the files will be created
+        output_directory = Path('C:/Users/razic/browser-sandbox/file-check-server/rules_by_level')
+
+        # Create the output directory if it doesn't exist
+        output_directory.mkdir(exist_ok=True)
+
+        # Iterate over the rules and write each rule to the appropriate file based on its level
+        for level in levels:
+            # Construct the file path for the level
+            file_path = output_directory / f'{level}.txt'
+            with file_path.open('a') as f:
+                if level == 'critical':
+                    f.write(bash_backend().convert(SigmaCollection(critical_rules)))
+                elif level == 'high':
+                    f.write(bash_backend().convert(SigmaCollection(high_rules)))
+                elif level == 'medium':
+                    f.write(bash_backend().convert(SigmaCollection(medium_rules)))
+                elif level == 'low':
+                    f.write(bash_backend().convert(SigmaCollection(low_rules)))
+                elif level == 'informational':
+                    f.write(bash_backend().convert(SigmaCollection(informational_rules)))
+
+# print(bash_backend().convert(
+#     SigmaCollection.load_ruleset(file_paths[0:], on_load=del_path)
+# ))
 
 # #generic test rule # #TODO make the next rule work in the future - the problem is that convert_as_in dosn't work on cidr, make it work!!!
 # print(bash_backend().convert(
