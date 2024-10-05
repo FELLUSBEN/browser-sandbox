@@ -176,7 +176,7 @@ class bashBackend(TextQueryBackend):
                     else str(field + op + arg.value)  # value is number
                     for arg in cond.args
                 ]
-                values[0] += " " + str(cond.source.path) if cond.source else None
+                values[0] += " " + str(cond.source.path) if cond.source else ''
                 return " | grep ".join(values)
             
             else:

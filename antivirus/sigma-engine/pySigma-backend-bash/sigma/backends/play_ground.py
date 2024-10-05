@@ -18,11 +18,12 @@ file_paths = [file.as_posix() for file in directory.rglob('*') if file.is_file()
 # If you want the file paths as strings, convert them like this
 file_paths = [str(file) for file in file_paths]
 
-# Print the file paths
-for file in file_paths:
-    print(file)
-print(len(file_paths))
-# file_paths.pop(0)
+# # Print the file paths
+# for file in file_paths:
+#     print(file)
+# print(len(file_paths))
+file_paths.remove("C:/Users/razic/Downloads/linux/desktop.ini")
+file_paths.remove("C:/Users/razic/Downloads/linux/process_creation/desktop.ini")
 
 print(bash_backend().convert(
     SigmaCollection.load_ruleset(file_paths[0:], on_load=del_path)

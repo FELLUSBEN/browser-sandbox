@@ -1,0 +1,395 @@
+grep type\s?=\s?EXECVE \var\log\audit\audit.log | grep a0\s?=\s?arecord | grep a1\s?=\s?-vv | grep a2\s?=\s?-fdat low
+;
+grep type\s?=\s?PATH \var\log\audit\audit.log | grep < ( grep name\s?=\s?(/etc/audit/.*|/etc/libaudit\.conf|/etc/audisp/.*) \var\log\audit\audit.log ) high
+;
+grep type\s?=\s?EXECVE \var\log\audit\audit.log | grep < ( grep truncate \var\log\audit\audit.log | grep -s ; grep dd \var\log\audit\audit.log | grep if= | grep -v of= ) high
+;
+grep type\s?=\s?PATH \var\log\audit\audit.log | grep < ( grep name\s?=\s?(/var/run/haldrund\.pid|/var/run/xinetd\.lock|/var/run/kdevrund\.pid) \var\log\audit\audit.log ) high
+;
+grep type\s?=\s?EXECVE \var\log\audit\audit.log | grep a0\s?=\s?.*iptables | grep a1\s?=\s?-t | grep a2\s?=\s?nat | grep < ( grep (--to-ports 42|--to-ports 43) \var\log\audit\audit.log ) medium
+;
+grep type\s?=\s?EXECVE \var\log\audit\audit.log | grep a0\s?=\s?getcap | grep a1\s?=\s?-r | grep a2\s?=\s?/ low
+;
+grep type\s?=\s?EXECVE \var\log\audit\audit.log | grep touch | grep < ( grep (-t|-acmr|-d|-r) \var\log\audit\audit.log ) medium
+;
+grep type\s?=\s?EXECVE \var\log\audit\audit.log | grep a0\s?=\s?.*chattr.* | grep a1\s?=\s?.*-i.* medium
+;
+grep type\s?=\s?EXECVE \var\log\audit\audit.log | grep a0\s?=\s?xclip | grep < ( grep a1\s?=\s?(-selection|-sel) \var\log\audit\audit.log ) | grep < ( grep a2\s?=\s?(clipboard|clip) \var\log\audit\audit.log ) | grep a3\s?=\s?-o low
+;
+grep type\s?=\s?EXECVE \var\log\audit\audit.log | grep a0\s?=\s?xclip | grep < ( grep a1\s?=\s?(-selection|-sel) \var\log\audit\audit.log ) | grep < ( grep a2\s?=\s?(clipboard|clip) \var\log\audit\audit.log ) | grep a3\s?=\s?-t | grep a4\s?=\s?image/.* | grep a5\s?=\s?-o low
+;
+grep a1\s?=\s?--cpu-priority.* \var\log\audit\audit.log ; grep a2\s?=\s?--cpu-priority.* \var\log\audit\audit.log ; grep a3\s?=\s?--cpu-priority.* \var\log\audit\audit.log ; grep a4\s?=\s?--cpu-priority.* \var\log\audit\audit.log ; grep a5\s?=\s?--cpu-priority.* \var\log\audit\audit.log ; grep a6\s?=\s?--cpu-priority.* \var\log\audit\audit.log ; grep a7\s?=\s?--cpu-priority.* \var\log\audit\audit.log critical
+;
+grep type\s?=\s?SYSCALL \var\log\audit\audit.log | grep exe\s?=\s?.*/useradd ; grep type\s?=\s?ADD_USER \var\log\audit\audit.log medium
+;
+grep type\s?=\s?execve \var\log\audit\audit.log | grep a0\s?=\s?zip ; grep type\s?=\s?execve \var\log\audit\audit.log | grep a0\s?=\s?gzip | grep a1\s?=\s?-k ; grep type\s?=\s?execve \var\log\audit\audit.log | grep a0\s?=\s?tar | grep a1\s?=\s?.*-c.* low
+;
+grep type\s?=\s?EXECVE \var\log\audit\audit.log | grep a0\s?=\s?wget | grep a1\s?=\s?--post-file=.* medium
+;
+grep type\s?=\s?EXECVE \var\log\audit\audit.log | grep a0\s?=\s?.*dd.* | grep < ( grep a1\s?=\s?(.*if=/dev/null.*|.*if=/dev/zero.*) \var\log\audit\audit.log ) low
+;
+grep type\s?=\s?SERVICE_STOP \var\log\audit\audit.log | grep < ( grep unit\s?=\s?(firewalld|iptables|ufw) \var\log\audit\audit.log ) high
+;
+grep type\s?=\s?EXECVE \var\log\audit\audit.log | grep < ( grep a0\s?=\s?(.*chmod.*|.*chown.*) \var\log\audit\audit.log ) low
+;
+grep type\s?=\s?EXECVE \var\log\audit\audit.log | grep grep | grep password high
+;
+grep type\s?=\s?PATH \var\log\audit\audit.log | grep name\s?=\s?.*/\..* | grep -v < ( grep name\s?=\s?(.*/\.cache/.*|.*/\.config/.*|.*/\.pyenv/.*|.*/\.rustup/toolchains.*) \var\log\audit\audit.log ) low
+;
+grep type\s?=\s?EXECVE \var\log\audit\audit.log | grep < ( grep a0\s?=\s?(mkdir|touch|vim|nano|vi) \var\log\audit\audit.log ) | grep < ( grep a1\s?=\s?.*/\..* \var\log\audit\audit.log ; grep a1\s?=\s?\..* \var\log\audit\audit.log ; grep a2\s?=\s?.*/\..* \var\log\audit\audit.log ; grep a2\s?=\s?\..* \var\log\audit\audit.log ) low
+;
+grep type\s?=\s?EXECVE \var\log\audit\audit.log | grep a0\s?=\s?cat | grep < ( grep a1\s?=\s?(.*\.jpg|.*\.png) \var\log\audit\audit.log ) | grep a2\s?=\s?.*\.zip low
+;
+grep type\s?=\s?PATH \var\log\audit\audit.log | grep < ( grep name\s?=\s?(/etc/pam\.d/system-auth|/etc/pam\.d/password-auth) \var\log\audit\audit.log ) ; grep type\s?=\s?(TTY|USER_TTY) \var\log\audit\audit.log high
+;
+grep type\s?=\s?PATH \var\log\audit\audit.log | grep name\s?=\s?/etc/ld\.so\.preload high
+;
+grep type\s?=\s?SYSCALL \var\log\audit\audit.log | grep comm\s?=\s?insmod | grep exe\s?=\s?/usr/bin/kmod high
+;
+grep type\s?=\s?PATH \var\log\audit\audit.log | grep < ( grep name\s?=\s?(/etc/syslog\.conf|/etc/rsyslog\.conf|/etc/syslog-ng/syslog-ng\.conf) \var\log\audit\audit.log ) high
+;
+grep type\s?=\s?execve \var\log\audit\audit.log | grep a0\s?=\s?cp | grep a1\s?=\s?/bin/sh | grep a2\s?=\s?.*/crond medium
+;
+grep type\s?=\s?EXECVE \var\log\audit\audit.log | grep a0\s?=\s?iptables | grep a1\s?=\s?.*DROP.* ; grep type\s?=\s?EXECVE \var\log\audit\audit.log | grep a0\s?=\s?firewall-cmd | grep a1\s?=\s?.*remove.* ; grep type\s?=\s?EXECVE \var\log\audit\audit.log | grep a0\s?=\s?ufw | grep a1\s?=\s?.*delete.* medium
+;
+grep type\s?=\s?SYSCALL \var\log\audit\audit.log | grep < ( grep exe\s?=\s?(.*/telnet|.*/nmap|.*/netcat|.*/nc|.*/ncat|.*/nc\.openbsd) \var\log\audit\audit.log ) | grep key\s?=\s?network_connect_4 low
+;
+grep type\s?=\s?execve \var\log\audit\audit.log | grep a0\s?=\s?tcpdump | grep a1\s?=\s?-c | grep a3\s?=\s?.*-i.* ; grep type\s?=\s?execve \var\log\audit\audit.log | grep a0\s?=\s?tshark | grep a1\s?=\s?-c | grep a3\s?=\s?-i low
+;
+grep type\s?=\s?PATH \var\log\audit\audit.log | grep < ( grep name\s?=\s?(/etc/pam\.d/common-password|/etc/security/pwquality\.conf|/etc/pam\.d/system-auth|/etc/login\.defs) \var\log\audit\audit.log ) ; grep type\s?=\s?EXECVE \var\log\audit\audit.log | grep a0\s?=\s?chage | grep < ( grep a1\s?=\s?(--list|-l) \var\log\audit\audit.log ) ; grep type\s?=\s?EXECVE \var\log\audit\audit.log | grep a0\s?=\s?passwd | grep < ( grep a1\s?=\s?(-S|--status) \var\log\audit\audit.log ) low
+;
+grep type\s?=\s?EXECVE \var\log\audit\audit.log | grep a0\s?=\s?.*systemctl.* | grep < ( grep a1\s?=\s?(.*daemon-reload.*|.*start.*) \var\log\audit\audit.log ) low
+;
+grep type\s?=\s?EXECVE \var\log\audit\audit.log | grep a0\s?=\s?import | grep < ( grep a1\s?=\s?-window \var\log\audit\audit.log | grep a2\s?=\s?root | grep < ( grep a3\s?=\s?(.*\.png|.*\.jpg|.*\.jpeg) \var\log\audit\audit.log ) ; grep a1\s?=\s?(.*\.png|.*\.jpg|.*\.jpeg) \var\log\audit\audit.log ) low
+;
+grep type\s?=\s?EXECVE \var\log\audit\audit.log | grep a0\s?=\s?xwd | grep < ( grep a1\s?=\s?-root \var\log\audit\audit.log | grep a2\s?=\s?-out | grep a3\s?=\s?.*\.xwd ; grep a1\s?=\s?-out \var\log\audit\audit.log | grep a2\s?=\s?.*\.xwd ) low
+;
+grep type\s?=\s?SYSCALL \var\log\audit\audit.log | grep comm\s?=\s?split low
+;
+grep type\s?=\s?EXECVE \var\log\audit\audit.log | grep a0\s?=\s?steghide | grep a1\s?=\s?embed | grep < ( grep a2\s?=\s?(-cf|-ef) \var\log\audit\audit.log ) | grep < ( grep a4\s?=\s?(-cf|-ef) \var\log\audit\audit.log ) low
+;
+grep type\s?=\s?EXECVE \var\log\audit\audit.log | grep a0\s?=\s?steghide | grep a1\s?=\s?extract | grep a2\s?=\s?-sf | grep < ( grep a3\s?=\s?(.*\.jpg|.*\.png) \var\log\audit\audit.log ) low
+;
+grep key\s?=\s?susp_activity \var\log\audit\audit.log medium
+;
+grep type\s?=\s?EXECVE \var\log\audit\audit.log | grep a0\s?=\s?chmod | grep a1\s?=\s?777 ; grep type\s?=\s?EXECVE \var\log\audit\audit.log | grep a0\s?=\s?chmod | grep a1\s?=\s?u\+s ; grep type\s?=\s?EXECVE \var\log\audit\audit.log | grep a0\s?=\s?cp | grep a1\s?=\s?/bin/ksh ; grep type\s?=\s?EXECVE \var\log\audit\audit.log | grep a0\s?=\s?cp | grep a1\s?=\s?/bin/sh medium
+;
+grep type\s?=\s?SYSCALL \var\log\audit\audit.log | grep < ( grep exe\s?=\s?(/tmp/.*|/var/www/.*|/home/.*/public_html/.*|/usr/local/apache2/.*|/usr/local/httpd/.*|/var/apache/.*|/srv/www/.*|/home/httpd/html/.*|/srv/http/.*|/usr/share/nginx/html/.*|/var/lib/pgsql/data/.*|/usr/local/mysql/data/.*|/var/lib/mysql/.*|/var/vsftpd/.*|/etc/bind/.*|/var/named/.*) \var\log\audit\audit.log ) medium
+;
+grep type\s?=\s?EXECVE \var\log\audit\audit.log | grep < ( grep (\.bash_history|\.zsh_history|\.zhistory|\.history|\.sh_history|fish_history) \var\log\audit\audit.log ) medium
+;
+grep type\s?=\s?PATH \var\log\audit\audit.log | grep nametype\s?=\s?CREATE | grep < ( grep name\s?=\s?(/usr/lib/systemd/system/.*|/etc/systemd/system/.*) \var\log\audit\audit.log ; grep name\s?=\s?.*/\.config/systemd/user/.* \var\log\audit\audit.log ) medium
+;
+grep type\s?=\s?PATH \var\log\audit\audit.log | grep < ( grep name\s?=\s?(/etc/lsb-release|/etc/redhat-release|/etc/issue) \var\log\audit\audit.log ) ; grep type\s?=\s?EXECVE \var\log\audit\audit.log | grep < ( grep a0\s?=\s?(uname|uptime|lsmod|hostname|env) \var\log\audit\audit.log ) ; grep type\s?=\s?EXECVE \var\log\audit\audit.log | grep a0\s?=\s?grep | grep < ( grep a1\s?=\s?(.*vbox.*|.*vm.*|.*xen.*|.*virtio.*|.*hv.*) \var\log\audit\audit.log ) ; grep type\s?=\s?EXECVE \var\log\audit\audit.log | grep a0\s?=\s?kmod | grep a1\s?=\s?list low
+;
+grep type\s?=\s?PATH \var\log\audit\audit.log | grep < ( grep name\s?=\s?(/sys/class/dmi/id/bios_version|/sys/class/dmi/id/product_name|/sys/class/dmi/id/chassis_vendor|/proc/scsi/scsi|/proc/ide/hd0/model|/proc/version|/etc/.*version|/etc/.*release|/etc/issue) \var\log\audit\audit.log ) informational
+;
+grep type\s?=\s?EXECVE \var\log\audit\audit.log | grep < ( grep (shutdown|reboot|halt|poweroff) \var\log\audit\audit.log ; grep < ( grep (init|telinit) \var\log\audit\audit.log ) | grep < ( grep (0|6) \var\log\audit\audit.log ) ) informational
+;
+grep type\s?=\s?EXECVE \var\log\audit\audit.log | grep a0\s?=\s?unzip | grep < ( grep a1\s?=\s?(.*\.jpg|.*\.png) \var\log\audit\audit.log ) low
+;
+grep type\s?=\s?EXECVE \var\log\audit\audit.log | grep < ( grep a0\s?=\s?(users|w|who) \var\log\audit\audit.log ) low
+;
+grep type\s?=\s?SYSCALL \var\log\audit\audit.log | grep syscall\s?=\s?execve | grep key\s?=\s?detect_execve_www critical
+;
+grep (chown root.*chmod 4777 |cp /bin/sh \.;chown|chmod 4777 /tmp/\.scsi/dev/bin/gsh|chown root:root /tmp/\.scsi/dev/bin/|chown root:root x;|/bin/telnet locip locport < /dev/console \| /bin/sh|/tmp/ratload|ewok -t |xspy -display |cat > /dev/tcp/127\.0\.0\.1/80 <<END|rm -f /current/tmp/ftshell\.latest|ghost_.* -v | --wipe > /dev/null|ping -c 2 .*; grep .* /proc/net/arp >/tmp/gx|iptables .* OUTPUT -p tcp -d 127\.0\.0\.1 --tcp-flags RST RST -j DROP;|> /var/log/audit/audit\.log; rm -f \.|cp /var/log/audit/audit\.log \.tmp|sh >/dev/tcp/.* <&1 2>&1|ncat -vv -l -p .* <|nc -vv -l -p .* <|< /dev/console \| uudecode && uncompress|sendmail -osendmail;chmod \+x sendmail|/usr/bin/wget -O /tmp/a http.* && chmod 755 /tmp/cron|chmod 666 /var/run/utmp~|chmod 700 nscd crond|cp /etc/shadow /tmp/\.|</dev/console \|uudecode > /dev/null 2>&1 && uncompress|chmod 700 jp&&netstat -an\|grep|uudecode > /dev/null 2>&1 && uncompress -f .* && chmod 755|chmod 700 crond|wget http.*; chmod \+x /tmp/sendmail|chmod 700 fp sendmail pt|chmod 755 /usr/vmsys/bin/pipe|chmod -R 755 /usr/vmsys|chmod 755 \$opbin/.*tunnel|chmod 700 sendmail|chmod 0700 sendmail|/usr/bin/wget http.*sendmail;chmod \+x sendmail;|&& telnet .* 2>&1 </dev/console) \var\log\syslog high
+;
+grep (attempt to execute code on stack by|FTP LOGIN FROM \..* 0bin0sh|rpc\.statd\[\\d\+\]: gethostbyname error for|AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA) \var\log\syslog high
+;
+grep < ( grep (rm /var/log/syslog|rm -r /var/log/syslog|rm -f /var/log/syslog|rm -rf /var/log/syslog|mv /var/log/syslog| >/var/log/syslog| > /var/log/syslog) \var\log\syslog ) | grep -v /syslog\. high
+;
+grep < ( grep (scp |rsync |sftp ) \var\log\syslog ) | grep < ( grep (@|:) \var\log\syslog ) low
+;
+grep /etc/ld\.so\.preload \var\log\syslog high
+;
+grep networkd-dispatcher \var\log\syslog | grep Error handling notification for interface | grep \.\./\.\./ high
+;
+grep bpf_probe_write_user \var\log\syslog high
+;
+grep new user \var\log\syslog | grep < ( grep (GID=0|UID=0|GID=10|GID=27) \var\log\syslog ) high
+;
+grep (\(\)\{:;\};|\(\) \{:;\};|\(\) \{ :;\};|\(\) \{ :; \};) \var\log\syslog high
+;
+grep (cat /dev/null >.*sh_history|cat /dev/zero >.*sh_history|chattr \+i.*sh_history|echo "" >.*sh_history|empty_bash_history|export HISTFILESIZE=0|history -c|history -w|ln -sf /dev/null .*sh_history|ln -sf /dev/zero .*sh_history|rm .*sh_history|shopt -ou history|shopt -uo history|shred .*sh_history|truncate -s0 .*sh_history) \var\log\syslog high
+;
+grep (wget .* - http.* \| perl|wget .* - http.* \| sh|wget .* - http.* \| bash|python -m SimpleHTTPServer|-m http\.server|import pty; pty\.spawn.*|socat exec:.*|socat -O /tmp/.*|socat tcp-connect.*|.*echo binary >>.*|.*wget .*; chmod \+x.*|.*wget .*; chmod 777 .*|.*cd /tmp \|\| cd /var/run \|\| cd /mnt.*|.*stop;service iptables stop;.*|.*stop;SuSEfirewall2 stop;.*|chmod 777 2020.*|.*>>/etc/rc\.local|.*base64 -d /tmp/.*|.* \| base64 -d .*|.*/chmod u\+s .*|.*chmod \+s /tmp/.*|.*chmod u\+s /tmp/.*|.* /tmp/haxhax.*|.* /tmp/ns_sploit.*|nc -l -p .*|cp /bin/ksh .*|cp /bin/sh .*|.* /tmp/.*\.b64 .*|.*/tmp/ysocereal\.jar.*|.*/tmp/x .*|.*; chmod \+x /tmp/.*|.*;chmod \+x /tmp/.*) \var\log\syslog high
+;
+grep (entered promiscuous mode|Deactivating service|Oversized packet received from|imuxsock begins to drop messages) \var\log\syslog medium
+;
+grep (BEGIN \{s = "/inet/tcp/0/|bash -i >& /dev/tcp/|bash -i >& /dev/udp/|sh -i >\$ /dev/udp/|sh -i >\$ /dev/tcp/|&& while read line 0<&5; do|/bin/bash -c exec 5<>/dev/tcp/|/bin/bash -c exec 5<>/dev/udp/|nc -e /bin/sh |/bin/sh \| nc|rm -f backpipe; mknod /tmp/backpipe p && nc |;socket\(S,PF_INET,SOCK_STREAM,getprotobyname\("tcp"\)\);if\(connect\(S,sockaddr_in\(\$p,inet_aton\(\$i\)\)\)\)|;STDIN->fdopen\(\$c,r\);\$~->fdopen\(\$c,w\);system\$_ while<>;|/bin/sh -i <&3 >&3 2>&3|uname -a; w; id; /bin/bash -i|\$sendbyte = \(\[text\.encoding\]::ASCII\)\.GetBytes\(\$sendback2\); \$stream\.Write\(\$sendbyte,0,\$sendbyte\.Length\); \$stream\.Flush\(\)\};|;os\.dup2\(s\.fileno\(\),0\);os\.dup2\(s\.fileno\(\),1\);os\.dup2\(s\.fileno\(\),2\);os\.putenv\('HISTFILE','/dev/null'\);|\.to_i;exec sprintf\("/bin/sh -i <&%d >&%d 2>&%d",f,f,f\)|;while\(cmd=c\.gets\);IO\.popen\(cmd,"r"\)\{\|io\|c\.print|socat exec:'bash -li',pty,stderr,setsid,sigint,sane tcp:|rm -f /tmp/p; mknod /tmp/p p &&| \| /bin/bash \| telnet |,echo=0,raw tcp-listen:|nc -lvvp |xterm -display 1) \var\log\syslog high
+;
+grep echo ".*" > .* && chmod \+x .* \var\log\syslog | grep mv .* ".* " low
+;
+grep (cat </dev/tcp/|exec 3<>/dev/tcp/|echo >/dev/tcp/|bash -i >& /dev/tcp/|sh -i >& /dev/udp/|0<&196;exec 196<>/dev/tcp/|exec 5<>/dev/tcp/|\(sh\)0>/dev/tcp/|bash -c 'bash -i >& /dev/tcp/|echo -e '#!/bin/bash\\nbash -i >& /dev/tcp/) \var\log\syslog medium
+;
+grep bash -c /bin/bash \var\log\syslog | grep &/dev/tcp/ high
+;
+grep (ln -s -f /etc/passwd|ln -s /etc/passwd) \var\log\syslog high
+;
+grep pkexec \var\log\auth.log | grep The value for environment variable XAUTHORITY contains suspicious content | grep \[USER=root\] \[TTY=/dev/pts/0\] high
+;
+grep (Trojan.*FOUND|VirTool.*FOUND|Webshell.*FOUND|Rootkit.*FOUND|Htran.*FOUND) \var\log\clamav\clamav.log high
+;
+grep REPLACE \var\log\syslog medium
+;
+grep \(2 users now present\) \var\log\syslog high
+;
+grep error: buffer_get_ret: trying to get more bytes 1907 than in buffer 308 \[preauth\] \var\log\auth.log medium
+;
+grep (unexpected internal error|unknown or unsupported key type|invalid certificate signing key|invalid elliptic curve value|incorrect signature|error in libcrypto|unexpected bytes remain after decoding|fatal: buffer_get_string: bad string|Local: crc32 compensation attack|bad client public DH value|Corrupted MAC on input) \var\log\auth.log medium
+;
+grep USER\s?=\s?(#-.*|#.*4294967295) \var\log\auth.log critical
+;
+grep (stopping iptables|stopping ip6tables|stopping firewalld|stopping cbdaemon|stopping falcon-sensor) \var\log\syslog medium
+;
+grep ( dropping source port zero packet from | denied AXFR from | exiting \(due to fatal error\)) \var\log\syslog high
+;
+grep (Connection refused: too many sessions for this address\.|Connection refused: tcp_wrappers denial\.|Bad HTTP verb\.|port and pasv both active|pasv and port both active|Transfer done \(but failed to open directory\)\.|Could not set file modification time\.|bug: pid active in ptrace_sandbox_free|PTRACE_SETOPTIONS failure|weird status:|couldn't handle sandbox event|syscall .* out of bounds|syscall not permitted:|syscall validate failed:|Input line too long\.|poor buffer accounting in str_netfd_alloc|vsf_sysutil_read_loop) \var\log\vsftpd.log medium
+;
+grep TargetFilename\s?=\s?.*/etc/doas\.conf \var\log\syslog medium
+;
+grep TargetFilename\s?=\s?(/etc/cron\.d/.*|/etc/cron\.daily/.*|/etc/cron\.hourly/.*|/etc/cron\.monthly/.*|/etc/cron\.weekly/.*|/var/spool/cron/crontabs/.*) \var\log\syslog ; grep TargetFilename\s?=\s?(.*/etc/cron\.allow.*|.*/etc/cron\.deny.*|.*/etc/crontab.*) \var\log\syslog medium
+;
+grep TargetFilename\s?=\s?/etc/sudoers\.d/.* \var\log\syslog medium
+;
+grep TargetFilename\s?=\s?.*/etc/profile\.d/.* \var\log\syslog | grep < ( grep TargetFilename\s?=\s?(.*\.csh|.*\.sh) \var\log\syslog ) low
+;
+grep TargetFilename\s?=\s?/tmp/rootlog \var\log\syslog high
+;
+grep TargetFilename\s?=\s?.*ebpfbackdoor \var\log\syslog high
+;
+grep Image\s?=\s?.*/wget \var\log\syslog | grep < ( grep TargetFilename\s?=\s?(/tmp/.*|/var/tmp/.*) \var\log\syslog ) medium
+;
+grep Image\s?=\s?.*/bin/bash \var\log\syslog | grep -v < ( grep DestinationIp\s?=\s?(127\.0\.0\.1|0\.0\.0\.0) \var\log\syslog ) critical
+;
+grep DestinationHostname\s?=\s?(pool\.minexmr\.com|fr\.minexmr\.com|de\.minexmr\.com|sg\.minexmr\.com|ca\.minexmr\.com|us-west\.minexmr\.com|pool\.supportxmr\.com|mine\.c3pool\.com|xmr-eu1\.nanopool\.org|xmr-eu2\.nanopool\.org|xmr-us-east1\.nanopool\.org|xmr-us-west1\.nanopool\.org|xmr-asia1\.nanopool\.org|xmr-jp1\.nanopool\.org|xmr-au1\.nanopool\.org|xmr\.2miners\.com|xmr\.hashcity\.org|xmr\.f2pool\.com|xmrpool\.eu|pool\.hashvault\.pro|moneroocean\.stream|monerocean\.stream) \var\log\syslog high
+;
+grep < ( grep DestinationHostname\s?=\s?(.*\.localto\.net|.*\.localtonet\.com) \var\log\syslog ) | grep Initiated\s?=\s?true high
+;
+grep DestinationHostname\s?=\s?(.*tunnel\.us\.ngrok\.com.*|.*tunnel\.eu\.ngrok\.com.*|.*tunnel\.ap\.ngrok\.com.*|.*tunnel\.au\.ngrok\.com.*|.*tunnel\.sa\.ngrok\.com.*|.*tunnel\.jp\.ngrok\.com.*|.*tunnel\.in\.ngrok\.com.*) \var\log\syslog high
+;
+grep < ( grep Image\s?=\s?(.*/apt|.*/apt-get) \var\log\syslog ) | grep CommandLine\s?=\s?.*APT::Update::Pre-Invoke::=.* medium
+;
+grep Image\s?=\s?(.*/at|.*/atd) \var\log\syslog low
+;
+grep < ( grep Image\s?=\s?(.*/awk|.*/gawk|.*/mawk|.*/nawk) \var\log\syslog ) | grep CommandLine\s?=\s?.*BEGIN \{system.* | grep < ( grep CommandLine\s?=\s?(.*/bin/bash.*|.*/bin/dash.*|.*/bin/fish.*|.*/bin/sh.*|.*/bin/zsh.*) \var\log\syslog ) high
+;
+grep Image\s?=\s?.*/base64 \var\log\syslog | grep CommandLine\s?=\s?.*-d.* low
+;
+grep CommandLine\s?=\s?.*base64 .* \var\log\syslog | grep < ( grep CommandLine\s?=\s?(.*\| bash .*|.*\| sh .*|.*\|bash .*|.*\|sh .*) \var\log\syslog ; grep CommandLine\s?=\s?(.* \|sh|.*\| bash|.*\| sh|.*\|bash) \var\log\syslog ) medium
+;
+grep CommandLine\s?=\s?(.*IyEvYmluL2Jhc2.*|.*IyEvYmluL2Rhc2.*|.*IyEvYmluL3pza.*|.*IyEvYmluL2Zpc2.*|.*IyEvYmluL3No.*) \var\log\syslog medium
+;
+grep Image\s?=\s?.*/bash \var\log\syslog | grep CommandLine\s?=\s?.* -i .* low
+;
+grep Image\s?=\s?.*bpftrace \var\log\syslog | grep CommandLine\s?=\s?.*--unsafe.* medium
+;
+grep CommandLine\s?=\s?.*echo 1 >.* \var\log\syslog | grep CommandLine\s?=\s?.*/sys/kernel/debug/tracing/events/kprobes/.* | grep < ( grep CommandLine\s?=\s?(.*/myprobe/enable.*|.*/myretprobe/enable.*) \var\log\syslog ) medium
+;
+grep Image\s?=\s?.*/capsh \var\log\syslog | grep CommandLine\s?=\s?.* -- high
+;
+grep < ( grep Image\s?=\s?(.*/cat|.*grep|.*/head|.*/tail|.*/more) \var\log\syslog ) | grep CommandLine\s?=\s?.* /etc/sudoers.* medium
+;
+grep Image\s?=\s?.*/chattr \var\log\syslog | grep CommandLine\s?=\s?.* -i .* medium
+;
+grep < ( grep Image\s?=\s?(.*/rm|.*/shred|.*/unlink) \var\log\syslog ) | grep < ( grep CommandLine\s?=\s?(.*/var/log.*|.*/var/spool/mail.*) \var\log\syslog ) medium
+;
+grep CommandLine\s?=\s?(.*rm /var/log/syslog.*|.*rm -r /var/log/syslog.*|.*rm -f /var/log/syslog.*|.*rm -rf /var/log/syslog.*|.*unlink /var/log/syslog.*|.*unlink -r /var/log/syslog.*|.*unlink -f /var/log/syslog.*|.*unlink -rf /var/log/syslog.*|.*mv /var/log/syslog.*|.* >/var/log/syslog.*|.* > /var/log/syslog.*) \var\log\syslog high
+;
+grep Image\s?=\s?.*xclip.* \var\log\syslog | grep CommandLine\s?=\s?.*-sel.* | grep CommandLine\s?=\s?.*clip.* | grep CommandLine\s?=\s?.*-o.* low
+;
+grep Image\s?=\s?.*/cp \var\log\syslog | grep CommandLine\s?=\s?.*/tmp/.* | grep < ( grep CommandLine\s?=\s?(.*passwd.*|.*shadow.*) \var\log\syslog ) high
+;
+grep Image\s?=\s?.*/crontab \var\log\syslog | grep CommandLine\s?=\s?.* -l.* low
+;
+grep Image\s?=\s?.*crontab \var\log\syslog | grep CommandLine\s?=\s?.* -r.* medium
+;
+grep CommandLine\s?=\s?(.* --cpu-priority=.*|.*--donate-level=0.*|.* -o pool\..*|.* --nicehash.*|.* --algo=rx/0 .*|.*stratum\+tcp://.*|.*stratum\+udp://.*|.*sh -c /sbin/modprobe msr allow_writes=on.*|.*LS1kb25hdGUtbGV2ZWw9.*|.*0tZG9uYXRlLWxldmVsP.*|.*tLWRvbmF0ZS1sZXZlbD.*|.*c3RyYXR1bSt0Y3A6Ly.*|.*N0cmF0dW0rdGNwOi8v.*|.*zdHJhdHVtK3RjcDovL.*|.*c3RyYXR1bSt1ZHA6Ly.*|.*N0cmF0dW0rdWRwOi8v.*|.*zdHJhdHVtK3VkcDovL.*) \var\log\syslog high
+;
+grep Image\s?=\s?.*/curl \var\log\syslog low
+;
+grep ParentImage\s?=\s?/opt/atlassian/confluence/.* \var\log\syslog | grep ParentImage\s?=\s?.*/java | grep < ( grep CommandLine\s?=\s?(.*/bin/sh.*|.*bash.*|.*dash.*|.*ksh.*|.*zsh.*|.*csh.*|.*fish.*|.*curl.*|.*wget.*|.*python.*) \var\log\syslog ) high
+;
+grep ParentImage\s?=\s?.*\\bash \var\log\syslog | grep < ( grep CommandLine\s?=\s?(.*id -Gn `.*|.*id -Gn '.*) \var\log\syslog ) high
+;
+grep < ( grep Image\s?=\s?(/bin/dd|/usr/bin/dd) \var\log\syslog ) | grep CommandLine\s?=\s?.*of=.* | grep < ( grep CommandLine\s?=\s?(.*if=/dev/zero.*|.*if=/dev/null.*) \var\log\syslog ) low
+;
+grep Image\s?=\s?.*/dd \var\log\syslog | grep CommandLine\s?=\s?.*of=.* | grep CommandLine\s?=\s?.*/proc/.* | grep CommandLine\s?=\s?.*/mem.* medium
+;
+grep CommandLine\s?=\s?.*-ufw-init.* \var\log\syslog | grep CommandLine\s?=\s?.*force-stop.* ; grep CommandLine\s?=\s?.*ufw.* \var\log\syslog | grep CommandLine\s?=\s?.*disable.* medium
+;
+grep Image\s?=\s?.*/doas \var\log\syslog low
+;
+grep Image\s?=\s?.*/env \var\log\syslog | grep < ( grep CommandLine\s?=\s?(.*/bin/bash|.*/bin/dash|.*/bin/fish|.*/bin/sh|.*/bin/zsh) \var\log\syslog ) high
+;
+grep Image\s?=\s?.*/esxcli \var\log\syslog | grep CommandLine\s?=\s?.*network.* | grep < ( grep CommandLine\s?=\s?(.* get.*|.* list.*) \var\log\syslog ) medium
+;
+grep Image\s?=\s?.*/esxcli \var\log\syslog | grep CommandLine\s?=\s?.*system.* | grep CommandLine\s?=\s?.* permission .* | grep CommandLine\s?=\s?.* set.* | grep CommandLine\s?=\s?.*Admin.* high
+;
+grep Image\s?=\s?.*/esxcli \var\log\syslog | grep CommandLine\s?=\s?.*storage.* | grep < ( grep CommandLine\s?=\s?(.* get.*|.* list.*) \var\log\syslog ) medium
+;
+grep Image\s?=\s?.*/esxcli \var\log\syslog | grep CommandLine\s?=\s?.*system.* | grep CommandLine\s?=\s?.*syslog.* | grep CommandLine\s?=\s?.*config.* | grep CommandLine\s?=\s?.* set.* medium
+;
+grep Image\s?=\s?.*/esxcli \var\log\syslog | grep CommandLine\s?=\s?.*system.* | grep < ( grep CommandLine\s?=\s?(.* get.*|.* list.*) \var\log\syslog ) medium
+;
+grep Image\s?=\s?.*/esxcli \var\log\syslog | grep CommandLine\s?=\s?.*system .* | grep CommandLine\s?=\s?.*account .* | grep CommandLine\s?=\s?.*add .* medium
+;
+grep Image\s?=\s?.*/esxcli \var\log\syslog | grep CommandLine\s?=\s?.*vm process.* | grep CommandLine\s?=\s?.* list medium
+;
+grep Image\s?=\s?.*/esxcli \var\log\syslog | grep CommandLine\s?=\s?.*vm process.* | grep CommandLine\s?=\s?.*kill.* medium
+;
+grep Image\s?=\s?.*/esxcli \var\log\syslog | grep CommandLine\s?=\s?.*vsan.* | grep < ( grep CommandLine\s?=\s?(.* get.*|.* list.*) \var\log\syslog ) medium
+;
+grep Image\s?=\s?.*/file \var\log\syslog | grep CommandLine\s?=\s?(.){200,} ; grep Image\s?=\s?.*/ls \var\log\syslog | grep CommandLine\s?=\s?.*-R.* ; grep Image\s?=\s?.*/find \var\log\syslog ; grep Image\s?=\s?.*/tree \var\log\syslog informational
+;
+grep Image\s?=\s?(.*/rm|.*/shred|.*/unlink) \var\log\syslog informational
+;
+grep Image\s?=\s?.*/find \var\log\syslog | grep CommandLine\s?=\s?.* \. .* | grep CommandLine\s?=\s?.*-exec.* | grep < ( grep CommandLine\s?=\s?(.*/bin/bash.*|.*/bin/dash.*|.*/bin/fish.*|.*/bin/sh.*|.*/bin/zsh.*) \var\log\syslog ) high
+;
+grep Image\s?=\s?.*/flock \var\log\syslog | grep CommandLine\s?=\s?.* -u .* | grep < ( grep CommandLine\s?=\s?(.*/bin/bash.*|.*/bin/dash.*|.*/bin/fish.*|.*/bin/sh.*|.*/bin/zsh.*) \var\log\syslog ) high
+;
+grep < ( grep Image\s?=\s?(.*/c89|.*/c99|.*/gcc) \var\log\syslog ) | grep CommandLine\s?=\s?.*-wrapper.* | grep < ( grep CommandLine\s?=\s?(.*/bin/bash,-s.*|.*/bin/dash,-s.*|.*/bin/fish,-s.*|.*/bin/sh,-s.*|.*/bin/zsh,-s.*) \var\log\syslog ) high
+;
+grep ParentImage\s?=\s?.*/git \var\log\syslog | grep ParentCommandLine\s?=\s?.* -p .* | grep ParentCommandLine\s?=\s?.*help.* | grep < ( grep CommandLine\s?=\s?(.*bash 0<&1.*|.*dash 0<&1.*|.*sh 0<&1.*) \var\log\syslog ) high
+;
+grep Image\s?=\s?.*/grep \var\log\syslog | grep < ( grep CommandLine\s?=\s?(.*aarch64|.*arm|.*i386|.*i686|.*mips|.*x86_64) \var\log\syslog ) low
+;
+grep Image\s?=\s?.*/groupdel \var\log\syslog medium
+;
+grep Image\s?=\s?(.*/update-ca-certificates|.*/update-ca-trust) \var\log\syslog low
+;
+grep < ( grep < ( grep Image\s?=\s?(.*/apt|.*/apt-get) \var\log\syslog ) | grep CommandLine\s?=\s?.*install.* ; grep Image\s?=\s?.*/yum \var\log\syslog | grep < ( grep CommandLine\s?=\s?(.*localinstall.*|.*install.*) \var\log\syslog ) ; grep Image\s?=\s?.*/rpm \var\log\syslog | grep CommandLine\s?=\s?.*-i.* ; grep Image\s?=\s?.*/dpkg \var\log\syslog | grep < ( grep CommandLine\s?=\s?(.*--install.*|.*-i.*) \var\log\syslog ) ) | grep < ( grep CommandLine\s?=\s?(.*nmap.*|.* nc.*|.*netcat.*|.*wireshark.*|.*tshark.*|.*openconnect.*|.*proxychains.*) \var\log\syslog ) medium
+;
+grep < ( grep Image\s?=\s?(.*/iptables|.*/xtables-legacy-multi|.*/iptables-legacy-multi|.*/ip6tables|.*/ip6tables-legacy-multi) \var\log\syslog ) | grep < ( grep CommandLine\s?=\s?(.*-F.*|.*-Z.*|.*-X.*) \var\log\syslog ) | grep < ( grep CommandLine\s?=\s?(.*ufw-logging-deny.*|.*ufw-logging-allow.*|.*ufw6-logging-deny.*|.*ufw6-logging-allow.*) \var\log\syslog ) medium
+;
+grep Image\s?=\s?(.*/kill|.*/pkill|.*/killall) \var\log\syslog low
+;
+grep Image\s?=\s?.*/lastlog \var\log\syslog ; grep CommandLine\s?=\s?.*'x:0:'.* \var\log\syslog ; grep < ( grep Image\s?=\s?(.*/cat|.*/head|.*/tail|.*/more) \var\log\syslog ) | grep < ( grep CommandLine\s?=\s?(.*/etc/passwd.*|.*/etc/shadow.*|.*/etc/sudoers.*) \var\log\syslog ) ; grep Image\s?=\s?.*/id \var\log\syslog ; grep Image\s?=\s?.*/lsof \var\log\syslog | grep CommandLine\s?=\s?.*-u.* low
+;
+grep Image\s?=\s?.*/groups \var\log\syslog ; grep < ( grep Image\s?=\s?(.*/cat|.*/head|.*/tail|.*/more) \var\log\syslog ) | grep CommandLine\s?=\s?.*/etc/group.* low
+;
+grep Image\s?=\s?.*/grep \var\log\syslog | grep < ( grep CommandLine\s?=\s?(.*apached.*|.*frpc.*|.*sshd\.sh.*|.*zone\.arm.*) \var\log\syslog ) high
+;
+grep Image\s?=\s?.*/mkfifo \var\log\syslog low
+;
+grep Image\s?=\s?.*/mkfifo \var\log\syslog | grep CommandLine\s?=\s?.* /tmp/.* medium
+;
+grep Image\s?=\s?.*/mount \var\log\syslog | grep CommandLine\s?=\s?.*hidepid=2.* | grep CommandLine\s?=\s?.* -o .* medium
+;
+grep < ( grep Image\s?=\s?(.*/nc|.*/ncat) \var\log\syslog ) | grep < ( grep CommandLine\s?=\s?(.* -c .*|.* -e .*) \var\log\syslog ) | grep < ( grep CommandLine\s?=\s?(.* ash.*|.* bash.*|.* bsh.*|.* csh.*|.* ksh.*|.* pdksh.*|.* sh.*|.* tcsh.*|.*/bin/ash.*|.*/bin/bash.*|.*/bin/bsh.*|.*/bin/csh.*|.*/bin/ksh.*|.*/bin/pdksh.*|.*/bin/sh.*|.*/bin/tcsh.*|.*/bin/zsh.*|.*\$IFSash.*|.*\$IFSbash.*|.*\$IFSbsh.*|.*\$IFScsh.*|.*\$IFSksh.*|.*\$IFSpdksh.*|.*\$IFSsh.*|.*\$IFStcsh.*|.*\$IFSzsh.*) \var\log\syslog ) high
+;
+grep Image\s?=\s?.*/nice \var\log\syslog | grep < ( grep CommandLine\s?=\s?(.*/bin/bash|.*/bin/dash|.*/bin/fish|.*/bin/sh|.*/bin/zsh) \var\log\syslog ) high
+;
+grep Image\s?=\s?.*/nohup \var\log\syslog medium
+;
+grep Image\s?=\s?.*/nohup \var\log\syslog | grep CommandLine\s?=\s?.*/tmp/.* high
+;
+grep User\s?=\s?root \var\log\syslog | grep LogonId\s?=\s?0 | grep CurrentDirectory\s?=\s?/var/opt/microsoft/scx/tmp | grep CommandLine\s?=\s?.*/etc/opt/microsoft/scx/conf/tmpdir/scx.* high
+;
+grep User\s?=\s?root \var\log\syslog | grep LogonId\s?=\s?0 | grep CurrentDirectory\s?=\s?/var/opt/microsoft/scx/tmp | grep CommandLine\s?=\s?.*/bin/sh.* high
+;
+grep Image\s?=\s?.*/perl \var\log\syslog | grep CommandLine\s?=\s?.* -e .* | grep < ( grep CommandLine\s?=\s?.*fdopen\(.* \var\log\syslog | grep CommandLine\s?=\s?.*::Socket::INET.* ; grep CommandLine\s?=\s?.*Socket.* \var\log\syslog | grep CommandLine\s?=\s?.*connect.* | grep CommandLine\s?=\s?.*open.* | grep CommandLine\s?=\s?.*exec.* ) high
+;
+grep Image\s?=\s?.*/php.* \var\log\syslog | grep CommandLine\s?=\s?.* -r .* | grep CommandLine\s?=\s?.*fsockopen.* | grep < ( grep CommandLine\s?=\s?(.*ash.*|.*bash.*|.*bsh.*|.*csh.*|.*ksh.*|.*pdksh.*|.*sh.*|.*tcsh.*|.*zsh.*) \var\log\syslog ) high
+;
+grep CommandLine\s?=\s?-(W|R)\s?(\s|"|')([0-9a-fA-F]{2}\s?){2,20}(\s|"|') \var\log\syslog medium
+;
+grep Image\s?=\s?(.*/ps|.*/top) \var\log\syslog informational
+;
+grep CommandLine\s?=\s?(.*http_proxy=.*|.*https_proxy=.*) \var\log\syslog low
+;
+grep < ( grep Image\s?=\s?(.*/python|.*/python2|.*/python3) \var\log\syslog ; grep Image\s?=\s?(.*/python2\..*|.*/python3\..*) \var\log\syslog ) | grep < ( grep CommandLine\s?=\s?.*import pty.* \var\log\syslog | grep CommandLine\s?=\s?.*\.spawn\(.* ; grep CommandLine\s?=\s?.*from pty import spawn.* \var\log\syslog ) high
+;
+grep Image\s?=\s?.*python.* \var\log\syslog | grep CommandLine\s?=\s?.* -c .* | grep CommandLine\s?=\s?.*import.* | grep CommandLine\s?=\s?.*pty.* | grep CommandLine\s?=\s?.*spawn\(.* | grep CommandLine\s?=\s?.*\.connect.* high
+;
+grep < ( grep Image\s?=\s?(.*/python|.*/python2|.*/python3) \var\log\syslog ; grep Image\s?=\s?(.*/python2\..*|.*/python3\..*) \var\log\syslog ) | grep CommandLine\s?=\s?.* -c .* | grep CommandLine\s?=\s?.*os\.system\(.* | grep < ( grep CommandLine\s?=\s?(.*/bin/bash.*|.*/bin/dash.*|.*/bin/fish.*|.*/bin/sh.*|.*/bin/zsh.*) ) high
+;
+grep ParentImage\s?=\s?.*/TeamViewer_Service \var\log\syslog | grep Image\s?=\s?.*/TeamViewer_Desktop | grep CommandLine\s?=\s?.*/TeamViewer_Desktop --IPCport 5939 --Module 1 low
+;
+grep Image\s?=\s?.*/arp \var\log\syslog | grep CommandLine\s?=\s?.*-a.* ; grep Image\s?=\s?.*/ping \var\log\syslog | grep < ( grep CommandLine\s?=\s?(.* 10\..*|.* 192\.168\..*|.* 172\.16\..*|.* 172\.17\..*|.* 172\.18\..*|.* 172\.19\..*|.* 172\.20\..*|.* 172\.21\..*|.* 172\.22\..*|.* 172\.23\..*|.* 172\.24\..*|.* 172\.25\..*|.* 172\.26\..*|.* 172\.27\..*|.* 172\.28\..*|.* 172\.29\..*|.* 172\.30\..*|.* 172\.31\..*|.* 127\..*|.* 169\.254\..*) \var\log\syslog ) low
+;
+grep Image\s?=\s?.*/yum \var\log\syslog | grep < ( grep CommandLine\s?=\s?(.*erase.*|.*remove.*) \var\log\syslog ) ; grep < ( grep Image\s?=\s?(.*/apt|.*/apt-get) \var\log\syslog ) | grep < ( grep CommandLine\s?=\s?(.*remove.*|.*purge.*) \var\log\syslog ) ; grep Image\s?=\s?.*/dpkg \var\log\syslog | grep < ( grep CommandLine\s?=\s?(.*--remove .*|.* -r .*) \var\log\syslog ) ; grep Image\s?=\s?.*/rpm \var\log\syslog | grep CommandLine\s?=\s?.* -e .* low
+;
+grep Image\s?=\s?.*/rsync \var\log\syslog | grep CommandLine\s?=\s?.* -e .* | grep < ( grep CommandLine\s?=\s?(.*sh 0<&2 1>&2.*|.*sh 1>&2 0<&2.*) \var\log\syslog ) | grep CommandLine\s?=\s?.*/dev/null.* high
+;
+grep Image\s?=\s?.*ruby.* \var\log\syslog | grep CommandLine\s?=\s?.* -e.* | grep CommandLine\s?=\s?.*rsocket.* | grep CommandLine\s?=\s?.*TCPSocket.* | grep < ( grep CommandLine\s?=\s?(.* ash.*|.* bash.*|.* bsh.*|.* csh.*|.* ksh.*|.* pdksh.*|.* sh.*|.* tcsh.*) \var\log\syslog ) medium
+;
+grep Image\s?=\s?.*crontab \var\log\syslog | grep CommandLine\s?=\s?.*/tmp/.* medium
+;
+grep < ( grep Image\s?=\s?(.*/grep|.*/egrep) \var\log\syslog ) | grep < ( grep CommandLine\s?=\s?(.*nessusd.*|.*td-agent.*|.*packetbeat.*|.*filebeat.*|.*auditbeat.*|.*osqueryd.*|.*cbagentd.*|.*falcond.*) \var\log\syslog ) low
+;
+grep Image\s?=\s?.*/service \var\log\syslog | grep CommandLine\s?=\s?.*iptables.* | grep CommandLine\s?=\s?.*stop.* ; grep Image\s?=\s?.*/service \var\log\syslog | grep CommandLine\s?=\s?.*ip6tables.* | grep CommandLine\s?=\s?.*stop.* ; grep Image\s?=\s?.*/chkconfig \var\log\syslog | grep CommandLine\s?=\s?.*iptables.* | grep CommandLine\s?=\s?.*stop.* ; grep Image\s?=\s?.*/chkconfig \var\log\syslog | grep CommandLine\s?=\s?.*ip6tables.* | grep CommandLine\s?=\s?.*stop.* ; grep Image\s?=\s?.*/systemctl \var\log\syslog | grep CommandLine\s?=\s?.*firewalld.* | grep CommandLine\s?=\s?.*stop.* ; grep Image\s?=\s?.*/systemctl \var\log\syslog | grep CommandLine\s?=\s?.*firewalld.* | grep CommandLine\s?=\s?.*disable.* ; grep Image\s?=\s?.*/service \var\log\syslog | grep CommandLine\s?=\s?.*cbdaemon.* | grep CommandLine\s?=\s?.*stop.* ; grep Image\s?=\s?.*/chkconfig \var\log\syslog | grep CommandLine\s?=\s?.*cbdaemon.* | grep CommandLine\s?=\s?.*off.* ; grep Image\s?=\s?.*/systemctl \var\log\syslog | grep CommandLine\s?=\s?.*cbdaemon.* | grep CommandLine\s?=\s?.*stop.* ; grep Image\s?=\s?.*/systemctl \var\log\syslog | grep CommandLine\s?=\s?.*cbdaemon.* | grep CommandLine\s?=\s?.*disable.* ; grep Image\s?=\s?.*/setenforce \var\log\syslog | grep CommandLine\s?=\s?.*0.* ; grep Image\s?=\s?.*/systemctl \var\log\syslog | grep CommandLine\s?=\s?.*stop.* | grep CommandLine\s?=\s?.*falcon-sensor.* ; grep Image\s?=\s?.*/systemctl \var\log\syslog | grep CommandLine\s?=\s?.*disable.* | grep CommandLine\s?=\s?.*falcon-sensor.* medium
+;
+grep < ( grep Image\s?=\s?(.*/service|.*/systemctl|.*/chkconfig) \var\log\syslog ) | grep < ( grep CommandLine\s?=\s?(.*stop.*|.*disable.*) \var\log\syslog ) medium
+;
+grep CommandLine\s?=\s?.*chown root.* \var\log\syslog | grep < ( grep CommandLine\s?=\s?(.* chmod u\+s.*|.* chmod g\+s.*) \var\log\syslog ) low
+;
+grep Image\s?=\s?.*/ssh \var\log\syslog | grep < ( grep CommandLine\s?=\s?(.*ProxyCommand=;.*|.*permitlocalcommand=yes.*|.*localhost.*) \var\log\syslog ) | grep < ( grep CommandLine\s?=\s?(.*/bin/bash.*|.*/bin/dash.*|.*/bin/fish.*|.*/bin/sh.*|.*/bin/zsh.*|.*sh 0<&2 1>&2.*|.*sh 1>&2 0<&2.*) \var\log\syslog ) high
+;
+grep Image\s?=\s?.*/amazon-ssm-agent \var\log\syslog | grep CommandLine\s?=\s?.*-register .* | grep CommandLine\s?=\s?.*-code .* | grep CommandLine\s?=\s?.*-id .* | grep CommandLine\s?=\s?.*-region .* medium
+;
+grep CommandLine\s?=\s?.* -u#.* \var\log\syslog high
+;
+grep Image\s?=\s?.*/chmod \var\log\syslog | grep < ( grep CommandLine\s?=\s?(.*/tmp/.*|.*/\.Library/.*|.*/etc/.*|.*/opt/.*) \var\log\syslog ) medium
+;
+grep < ( grep Image\s?=\s?(.*awk|.*/cat|.*grep|.*/head|.*/less|.*/more|.*/nl|.*/tail) \var\log\syslog ) | grep < ( grep CommandLine\s?=\s?.*/proc/2/.* \var\log\syslog ; grep CommandLine\s?=\s?.*/proc/.* \var\log\syslog | grep < ( grep CommandLine\s?=\s?(.*/cgroup|.*/sched) \var\log\syslog ) ) low
+;
+grep Image\s?=\s?.*/curl \var\log\syslog | grep < ( grep CommandLine\s?=\s?(.* --form.*|.* --upload-file .*|.* --data .*|.* --data-.*) \var\log\syslog ; grep CommandLine\s?=\s?\s-[FTd]\s \var\log\syslog ) | grep -v < ( grep CommandLine\s?=\s?(.*://localhost.*|.*://127\.0\.0\.1.*) \var\log\syslog ) medium
+;
+grep Image\s?=\s?.*/curl \var\log\syslog | grep < ( grep CommandLine\s?=\s?(.* -A .*|.* --user-agent .*) \var\log\syslog ) medium
+;
+grep < ( grep Image\s?=\s?(.*/cat|.*/dir|.*/find|.*/ls|.*/stat|.*/test|.*grep) \var\log\syslog ) | grep CommandLine\s?=\s?.*\.dockerenv low
+;
+grep Image\s?=\s?/tmp/.* \var\log\syslog high
+;
+grep Image\s?=\s?.*/find \var\log\syslog | grep < ( grep CommandLine\s?=\s?(.*-perm -4000.*|.*-perm -2000.*|.*-perm 0777.*|.*-perm -222.*|.*-perm -o w.*|.*-perm -o x.*|.*-perm -u=s.*|.*-perm -g=s.*) \var\log\syslog ) medium
+;
+grep Image\s?=\s?.*/git \var\log\syslog | grep CommandLine\s?=\s?.* clone .* | grep < ( grep CommandLine\s?=\s?(.*exploit.*|.*Vulns.*|.*vulnerability.*|.*RCE.*|.*RemoteCodeExecution.*|.*Invoke-.*|.*CVE-.*|.*poc-.*|.*ProofOfConcept.*|.*proxyshell.*|.*log4shell.*|.*eternalblue.*|.*eternal-blue.*|.*MS17-.*) \var\log\syslog ) medium
+;
+grep < ( grep Image\s?=\s?(.*/rm|.*/unlink|.*/shred) \var\log\syslog ) | grep < ( grep CommandLine\s?=\s?(.*/\.bash_history.*|.*/\.zsh_history.*) \var\log\syslog ; grep CommandLine\s?=\s?(.*_history|.*\.history|.*zhistory) \var\log\syslog ) high
+;
+grep < ( grep Image\s?=\s?(.*/cat|.*/head|.*/tail|.*/more) \var\log\syslog ) | grep < ( grep CommandLine\s?=\s?(.*/\.bash_history.*|.*/\.zsh_history.*) \var\log\syslog ; grep CommandLine\s?=\s?(.*_history|.*\.history|.*zhistory) \var\log\syslog ) medium
+;
+grep Image\s?=\s?(.*/crackmapexec|.*/havoc|.*/merlin-agent|.*/merlinServer-Linux-x64|.*/msfconsole|.*/msfvenom|.*/ps-empire server|.*/ps-empire|.*/sliver-client|.*/sliver-server|.*/Villain\.py) \var\log\syslog ; grep Image\s?=\s?(.*/cobaltstrike.*|.*/teamserver.*) \var\log\syslog ; grep Image\s?=\s?(.*/autorecon|.*/httpx|.*/legion|.*/naabu|.*/netdiscover|.*/nuclei|.*/recon-ng) \var\log\syslog ; grep Image\s?=\s?.*/sniper.* \var\log\syslog ; grep Image\s?=\s?(.*/dirb|.*/dirbuster|.*/eyewitness|.*/feroxbuster|.*/ffuf|.*/gobuster|.*/wfuzz|.*/whatweb) \var\log\syslog ; grep Image\s?=\s?(.*/joomscan|.*/nikto|.*/wpscan) \var\log\syslog ; grep Image\s?=\s?(.*/aircrack-ng|.*/bloodhound-python|.*/bpfdos|.*/ebpfki|.*/evil-winrm|.*/hashcat|.*/hoaxshell\.py|.*/hydra|.*/john|.*/ncrack|.*/nxc-ubuntu-latest|.*/pidhide|.*/pspy32|.*/pspy32s|.*/pspy64|.*/pspy64s|.*/setoolkit|.*/sqlmap|.*/writeblocker) \var\log\syslog ; grep Image\s?=\s?.*/linpeas.* \var\log\syslog high
+;
+grep Image\s?=\s?.*/ls \var\log\syslog | grep CommandLine\s?=\s?.* -.*i.* | grep CommandLine\s?=\s?.* -.*d.* | grep CommandLine\s?=\s?.* / low
+;
+grep ParentCommandLine\s?=\s?bash -i \var\log\syslog | grep < ( grep CommandLine\s?=\s?(.*-c import .*|.*base64.*|.*pty\.spawn.*) \var\log\syslog ; grep Image\s?=\s?(.*whoami|.*iptables|.*/ncat|.*/nc|.*/netcat) \var\log\syslog ) medium
+;
+grep ParentImage\s?=\s?.*/java \var\log\syslog | grep < ( grep CommandLine\s?=\s?(.*/bin/sh.*|.*bash.*|.*dash.*|.*ksh.*|.*zsh.*|.*csh.*|.*fish.*|.*curl.*|.*wget.*|.*python.*) \var\log\syslog ) high
+;
+grep < ( grep Image\s?=\s?(.*/nc|.*/ncat|.*/netcat|.*/socat) \var\log\syslog ) | grep -v < ( grep CommandLine\s?=\s?(.* --listen .*|.* -l .*) \var\log\syslog ) ; grep Image\s?=\s?(.*/autorecon|.*/hping|.*/hping2|.*/hping3|.*/naabu|.*/nmap|.*/nping|.*/telnet|.*/zenmap) \var\log\syslog low
+;
+grep < ( grep CommandLine\s?=\s?(sh -c .*|bash -c .*) \var\log\syslog ) | grep < ( grep CommandLine\s?=\s?(.*\| bash .*|.*\| sh .*|.*\|bash .*|.*\|sh .*) \var\log\syslog ; grep CommandLine\s?=\s?(.*\| bash|.*\| sh|.*\|bash|.* \|sh) \var\log\syslog ) medium
+;
+grep CommandLine\s?=\s?(.* -name \.htpasswd.*|.* -perm -4000 .*) \var\log\syslog high
+;
+grep < ( grep < ( grep Image\s?=\s?(.*/cat|.*/echo|.*/grep|.*/head|.*/more|.*/tail) \var\log\syslog ) | grep CommandLine\s?=\s?.*>.* ; grep Image\s?=\s?(.*/emacs|.*/nano|.*/sed|.*/vi|.*/vim) \var\log\syslog ) | grep < ( grep CommandLine\s?=\s?(.*/bin/login.*|.*/bin/passwd.*|.*/boot/.*|.*/etc/.*\.conf.*|.*/etc/cron\..*|.*/etc/crontab.*|.*/etc/hosts.*|.*/etc/init\.d.*|.*/etc/sudoers.*|.*/opt/bin/.*|.*/sbin.*|.*/usr/bin/.*|.*/usr/local/bin/.*) \var\log\syslog ) medium
+;
+grep ParentImage\s?=\s?/tmp/.* \var\log\syslog | grep < ( grep Image\s?=\s?(.*/bash|.*/csh|.*/dash|.*/fish|.*/ksh|.*/sh|.*/zsh) \var\log\syslog ) high
+;
+grep < ( grep Image\s?=\s?(.*/bash|.*/csh|.*/dash|.*/fish|.*/ksh|.*/sh|.*/zsh) \var\log\syslog ) | grep CommandLine\s?=\s?.* -c .* | grep CommandLine\s?=\s?.*/tmp/.* medium
+;
+grep Image\s?=\s?(.*/uname|.*/hostname|.*/uptime|.*/lspci|.*/dmidecode|.*/lscpu|.*/lsmod) \var\log\syslog informational
+;
+grep < ( grep Image\s?=\s?(.*/who|.*/w|.*/last|.*/lsof|.*/netstat) \var\log\syslog ) | grep -v < ( grep ParentCommandLine\s?=\s?.*/usr/bin/landscape-sysinfo.* \var\log\syslog | grep Image\s?=\s?.*/who ) low
+;
+grep Image\s?=\s?(.*/firewall-cmd|.*/ufw|.*/iptables|.*/netstat|.*/ss|.*/ip|.*/ifconfig|.*/systemd-resolve|.*/route) \var\log\syslog ; grep CommandLine\s?=\s?.*/etc/resolv\.conf.* \var\log\syslog informational
+;
+grep Image\s?=\s?.*/touch \var\log\syslog | grep CommandLine\s?=\s?.* -t .* | grep CommandLine\s?=\s?.*\.service medium
+;
+grep Image\s?=\s?.*/sudo \var\log\syslog | grep CommandLine\s?=\s?.*execve_hijack.* high
+;
+grep Image\s?=\s?.*/sudo \var\log\syslog | grep CommandLine\s?=\s?.* tc .* | grep CommandLine\s?=\s?.* enp0s3 .* | grep < ( grep CommandLine\s?=\s?(.* qdisc .*|.* filter .*) \var\log\syslog ) high
+;
+grep Image\s?=\s?.*/userdel \var\log\syslog medium
+;
+grep Image\s?=\s?.*/usermod \var\log\syslog | grep < ( grep CommandLine\s?=\s?(.*-aG root.*|.*-aG sudoers.*) \var\log\syslog ) medium
+;
+grep < ( grep Image\s?=\s?(.*/rvim|.*/vim|.*/vimdiff) \var\log\syslog ) | grep < ( grep CommandLine\s?=\s?(.* --cmd.*|.* -c .*) \var\log\syslog ) | grep < ( grep CommandLine\s?=\s?(.*:!/.*|.*:lua .*|.*:py .*|.*/bin/bash.*|.*/bin/dash.*|.*/bin/fish.*|.*/bin/sh.*|.*/bin/zsh.*) \var\log\syslog ) high
+;
+grep < ( grep ParentImage\s?=\s?(.*/httpd|.*/lighttpd|.*/nginx|.*/apache2|.*/node|.*/caddy) \var\log\syslog ; grep ParentCommandLine\s?=\s?.*/bin/java.* \var\log\syslog | grep ParentCommandLine\s?=\s?.*tomcat.* ; grep ParentCommandLine\s?=\s?.*/bin/java.* \var\log\syslog | grep ParentCommandLine\s?=\s?.*websphere.* ) | grep < ( grep Image\s?=\s?(.*/whoami|.*/ifconfig|.*/ip|.*/bin/uname|.*/bin/cat|.*/bin/crontab|.*/hostname|.*/iptables|.*/netstat|.*/pwd|.*/route) \var\log\syslog ) high
+;
+grep Image\s?=\s?.*/wget \var\log\syslog | grep < ( grep CommandLine\s?=\s?\s-O\s \var\log\syslog ; grep CommandLine\s?=\s?.*--output-document.* \var\log\syslog ) | grep CommandLine\s?=\s?.*/tmp/.* medium
+;
+grep Image\s?=\s?.*xterm.* \var\log\syslog | grep CommandLine\s?=\s?.*-display.* | grep CommandLine\s?=\s?.*:1 medium
