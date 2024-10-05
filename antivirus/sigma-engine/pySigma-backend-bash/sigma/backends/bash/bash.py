@@ -20,7 +20,7 @@ class bashBackend(TextQueryBackend):
 
     requires_pipeline : bool = True
     preprocessing_pipelin : sigma.pipelines.bash.bash_pipeline
-
+    
     # Operator precedence: tuple of Condition{AND,OR,NOT} in order of precedence.
     # The backend generates grouping if required
     precedence : ClassVar[Tuple[ConditionItem, ConditionItem, ConditionItem]] = (ConditionNOT, ConditionAND, ConditionOR)
@@ -120,7 +120,7 @@ class bashBackend(TextQueryBackend):
     def convert_condition(self, cond: ConditionOR | ConditionAND | ConditionNOT | ConditionFieldEqualsValueExpression | ConditionValueExpression, state: ConversionState) -> Any:
         return super().convert_condition(cond, state) + " " + str(cond.source.path) if cond.source and (not isinstance(cond,(ConditionAND,ConditionOR)) or (isinstance(cond,(ConditionOR)) and self.decide_convert_condition_as_in_expression(cond, state))) else super().convert_condition(cond, state)
     
-    def decide_convert_condition_as_in_expression(self, cond: Union[ConditionOR, ConditionAND], state: ConversionState) -> bool: #TODO check if usfull to make the keyword exprression an as_in_expression
+    def decide_convert_condition_as_in_expression(self, cond: Union[ConditionOR, ConditionAND], state: ConversionState) -> bool:
         # Check if conversion of condition type is enabled
         if (
             not self.convert_or_as_in

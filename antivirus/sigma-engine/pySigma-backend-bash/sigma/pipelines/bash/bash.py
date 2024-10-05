@@ -1,9 +1,9 @@
-from sigma.pipelines.common import logsource_linux, logsource_linux_file_create, logsource_linux_network_connection, logsource_linux_process_creation,logsource_windows,windows_logsource_mapping
+from sigma.pipelines.common import logsource_linux, logsource_linux_file_create, logsource_linux_network_connection, logsource_linux_process_creation,generate_windows_logsource_items
 from sigma.pipelines.base import Pipeline
-from sigma.processing.transformations import AddConditionTransformation, FieldMappingTransformation, DetectionItemFailureTransformation, RuleFailureTransformation, SetStateTransformation, ChangeLogsourceTransformation,ReplaceStringTransformation,DropDetectionItemTransformation, Transformation
+from sigma.processing.transformations import RuleFailureTransformation, ChangeLogsourceTransformation, Transformation, AddConditionTransformation
 from sigma.processing.postprocessing import EmbedQueryTransformation
-from sigma.processing.conditions import LogsourceCondition, IncludeFieldCondition, ExcludeFieldCondition, RuleProcessingItemAppliedCondition, field_name_conditions, MatchStringCondition
-from sigma.processing.pipeline import ProcessingItem, ProcessingPipeline, QueryPostprocessingItem
+from sigma.processing.conditions import LogsourceCondition
+from sigma.processing.pipeline import ProcessingItem, ProcessingPipeline
 from sigma.rule import SigmaRule, SigmaDetection, SigmaDetectionItem
 from sigma.modifiers import SigmaGreaterThanEqualModifier,SigmaGreaterThanModifier,SigmaLessThanEqualModifier,SigmaLessThanModifier
 from sigma.conditions import *
@@ -28,6 +28,33 @@ linux_logsource_mapping = { # map all linux services to files
     "vsftpd":"/var/log/vsftpd.log",
     None:"/var/log/syslog"
 }
+
+def generate_Linux_logsource_items(cond_field_template: str,cond_value_template: str,identifier_template: str = "Linux_logsource_{service}",) -> List[ProcessingItem]:
+    return [
+        ProcessingItem(
+            identifier=identifier_template.format(service=service, source=source),
+            transformation=(
+                AddConditionTransformation(
+                    {  # source is list
+                        cond_field_template.format(service=service, source=source): [
+                            cond_value_template.format(service=service, source=source_item)
+                            for source_item in source
+                        ]
+                    }
+                )
+                if isinstance(source, list)
+                else AddConditionTransformation(
+                    {  # source is plain string
+                        cond_field_template.format(
+                            service=service, source=source
+                        ): cond_value_template.format(service=service, source=source)
+                    }
+                )
+            ),
+            rule_conditions=[logsource_linux(service)],
+        )
+        for service, source in linux_logsource_mapping.items()
+    ]
 
 def append_detection_items(d: SigmaDetection, list:list[SigmaDetection]) -> None:
     if isinstance(d,SigmaDetectionItem):
@@ -154,7 +181,10 @@ class PromoteDetectionItemTransformation(Transformation):
     field: str
     def apply(self, pipeline, rule: SigmaRule) -> None:
         super().apply(pipeline, rule)
-        
+
+        # delattr(rule, "source")
+        # delattr(rule.detection, "source")
+
         detection_items = []
         [[detection_items.append(di) if isinstance(di,SigmaDetectionItem) else append_detection_items(di, detection_items) for di in dv.detection_items] for dv in rule.detection.detections.values()]
         

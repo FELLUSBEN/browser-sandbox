@@ -1,8 +1,32 @@
 from sigma.collection import SigmaCollection
 from sigma.backends.bash import bashBackend
+from pathlib import Path
 
 def bash_backend():
     return bashBackend()
+
+def del_path(path: Path, sigma_collection: SigmaCollection) -> SigmaCollection:
+    return SigmaCollection.from_yaml(path.open(encoding="utf-8"))
+
+
+# Specify the directory you want to list files from
+directory = Path('C:/Users/razic/Downloads/linux/')
+
+# List all files (recursive)
+file_paths = [file.as_posix() for file in directory.rglob('*') if file.is_file()]
+
+# If you want the file paths as strings, convert them like this
+file_paths = [str(file) for file in file_paths]
+
+# Print the file paths
+for file in file_paths:
+    print(file)
+print(len(file_paths))
+# file_paths.pop(0)
+
+print(bash_backend().convert(
+    SigmaCollection.load_ruleset(file_paths[0:], on_load=del_path)
+))
 
 # #generic test rule # #TODO make the next rule work in the future - the problem is that convert_as_in dosn't work on cidr, make it work!!!
 # print(bash_backend().convert(
@@ -64,29 +88,28 @@ def bash_backend():
 # # generic test rule
 # print(bash_backend().convert(
 #         SigmaCollection.from_yaml("""
-#             title: Triple Cross eBPF Rootkit Default Persistence
-#             id: 1a2ea919-d11d-4d1e-8535-06cda13be20f
-#             status: test
-#             description: Detects the creation of "ebpfbackdoor" files in both "cron.d" and "sudoers.d" directories. Which both are related to the TripleCross persistence method
+#             title: Buffer Overflow Attempts
+#             id: 18b042f0-2ecd-4b6e-9f8d-aa7a7e7de781
+#             status: stable
+#             description: Detects buffer overflow attempts in Unix system log files
 #             references:
-#                 - https://github.com/h3xduck/TripleCross/blob/12629558b8b0a27a5488a0b98f1ea7042e76f8ab/apps/deployer.sh
-#             author: Nasreddine Bencherchali (Nextron Systems)
-#             date: 2022-07-05
-#             modified: 2022-12-31
+#                 - https://github.com/ossec/ossec-hids/blob/1ecffb1b884607cb12e619f9ab3c04f530801083/etc/rules/attack_rules.xml
+#             author: Florian Roth (Nextron Systems)
+#             date: 2017-03-01
 #             tags:
-#                 - attack.persistence
-#                 - attack.defense-evasion
-#                 - attack.t1053.003
-
+#                 - attack.t1068
+#                 - attack.privilege-escalation
 #             logsource:
 #                 product: linux
-#                 category: file_event
 #             detection:
-#                 selection:
-#                     TargetFilename|endswith: 'ebpfbackdoor'
-#                 condition: selection
+#                 keywords:
+#                     - 'attempt to execute code on stack by'
+#                     - 'FTP LOGIN FROM .* 0bin0sh'
+#                     - 'rpc.statd[\d+]: gethostbyname error for'
+#                     - 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
+#                 condition: keywords
 #             falsepositives:
-#                 - Unlikely
+#                 - Unknown
 #             level: high
 #         """)
 #     ))
@@ -94,33 +117,35 @@ def bash_backend():
 # #generic test rule
 # print(bash_backend().convert(
 #         SigmaCollection.from_yaml("""
-#             title: Wget Creating Files in Tmp Directory
-#             id: 35a05c60-9012-49b6-a11f-6bab741c9f74
+#             title: Commands to Clear or Remove the Syslog - Builtin
+#             id: e09eb557-96d2-4de9-ba2d-30f712a5afd3
 #             status: test
-#             description: Detects the use of wget to download content in a temporary directory such as "/tmp" or "/var/tmp"
+#             description: Detects specific commands commonly used to remove or empty the syslog
 #             references:
-#                 - https://blogs.jpcert.or.jp/en/2023/05/gobrat.html
-#                 - https://jstnk9.github.io/jstnk9/research/GobRAT-Malware/
-#                 - https://www.virustotal.com/gui/file/60bcd645450e4c846238cf0e7226dc40c84c96eba99f6b2cffcd0ab4a391c8b3/detection
-#                 - https://www.virustotal.com/gui/file/3e44c807a25a56f4068b5b8186eee5002eed6f26d665a8b791c472ad154585d1/detection
-#             author: Joseliyo Sanchez, @Joseliyo_Jstnk
-#             date: 2023-06-02
+#                 - https://www.virustotal.com/gui/file/fc614fb4bda24ae8ca2c44e812d12c0fab6dd7a097472a35dd12ded053ab8474
+#             author: Max Altgelt (Nextron Systems)
+#             date: 2021-09-10
+#             modified: 2022-11-26
 #             tags:
-#                 - attack.command-and-control
-#                 - attack.t1105
+#                 - attack.impact
+#                 - attack.t1565.001
 #             logsource:
 #                 product: linux
-#                 category: file_event
 #             detection:
 #                 selection:
-#                     Image|endswith: '/wget'
-#                     TargetFilename|startswith:
-#                         - '/tmp/'
-#                         - '/var/tmp/'
-#                 condition: selection
+#                     - 'rm /var/log/syslog'
+#                     - 'rm -r /var/log/syslog'
+#                     - 'rm -f /var/log/syslog'
+#                     - 'rm -rf /var/log/syslog'
+#                     - 'mv /var/log/syslog'
+#                     - ' >/var/log/syslog'
+#                     - ' > /var/log/syslog'
+#                 falsepositives:
+#                     - '/syslog.'
+#                 condition: selection and not falsepositives
 #             falsepositives:
-#                 - Legitimate downloads of files in the tmp folder.
-#             level: medium
+#                 - Log rotation
+#             level: high
 #         """)
 #     ))
 
