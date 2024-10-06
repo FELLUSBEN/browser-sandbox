@@ -48,29 +48,29 @@ for rule in rules:
         informational_rules.append(rule)
 
  # Define the levels
-        levels = ['critical', 'high', 'medium', 'low', 'informational']
+levels = ['critical', 'high', 'medium', 'low', 'informational']
 
-        # Define the directory where the files will be created
-        output_directory = Path('C:/Users/razic/browser-sandbox/file-check-server/rules_by_level')
+# Define the directory where the files will be created
+output_directory = Path('C:/Users/razic/browser-sandbox/file-check-server/rules_by_level')
 
-        # Create the output directory if it doesn't exist
-        output_directory.mkdir(exist_ok=True)
+# Create the output directory if it doesn't exist
+output_directory.mkdir(exist_ok=True)
 
-        # Iterate over the rules and write each rule to the appropriate file based on its level
-        for level in levels:
-            # Construct the file path for the level
-            file_path = output_directory / f'{level}.txt'
-            with file_path.open('a') as f:
-                if level == 'critical':
-                    f.write(bash_backend().convert(SigmaCollection(critical_rules)))
-                elif level == 'high':
-                    f.write(bash_backend().convert(SigmaCollection(high_rules)))
-                elif level == 'medium':
-                    f.write(bash_backend().convert(SigmaCollection(medium_rules)))
-                elif level == 'low':
-                    f.write(bash_backend().convert(SigmaCollection(low_rules)))
-                elif level == 'informational':
-                    f.write(bash_backend().convert(SigmaCollection(informational_rules)))
+# Iterate over the rules and write each rule to the appropriate file based on its level
+for level in levels:
+    # Construct the file path for the level
+    file_path = output_directory / f'{level}.txt'
+    with file_path.open('a') as f:
+        if level == 'critical':
+            f.write(bash_backend().convert(SigmaCollection(critical_rules)))
+        elif level == 'high':
+            f.write(bash_backend().convert(SigmaCollection(high_rules)))
+        elif level == 'medium':
+            f.write(bash_backend().convert(SigmaCollection(medium_rules)))
+        elif level == 'low':
+            f.write(bash_backend().convert(SigmaCollection(low_rules)))
+        elif level == 'informational':
+            f.write(bash_backend().convert(SigmaCollection(informational_rules)))
 
 # print(bash_backend().convert(
 #     SigmaCollection.load_ruleset(file_paths[0:], on_load=del_path)

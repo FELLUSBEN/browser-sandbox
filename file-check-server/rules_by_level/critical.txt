@@ -1,0 +1,7 @@
+grep a1\s?=\s?--cpu-priority.* \var\log\audit\audit.log ; grep a2\s?=\s?--cpu-priority.* \var\log\audit\audit.log ; grep a3\s?=\s?--cpu-priority.* \var\log\audit\audit.log ; grep a4\s?=\s?--cpu-priority.* \var\log\audit\audit.log ; grep a5\s?=\s?--cpu-priority.* \var\log\audit\audit.log ; grep a6\s?=\s?--cpu-priority.* \var\log\audit\audit.log ; grep a7\s?=\s?--cpu-priority.* \var\log\audit\audit.log critical
+;
+grep type\s?=\s?SYSCALL \var\log\audit\audit.log | grep syscall\s?=\s?execve | grep key\s?=\s?detect_execve_www critical
+;
+grep USER\s?=\s?(#-.*|#.*4294967295) \var\log\auth.log critical
+;
+grep Image\s?=\s?.*/bin/bash \var\log\syslog | grep -v < ( grep DestinationIp\s?=\s?(127\.0\.0\.1|0\.0\.0\.0) \var\log\syslog ) critical
