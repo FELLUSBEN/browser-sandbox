@@ -1,13 +1,7 @@
-grep type\s?=\s?PATH \var\log\audit\audit.log | grep < ( grep name\s?=\s?(/sys/class/dmi/id/bios_version|/sys/class/dmi/id/product_name|/sys/class/dmi/id/chassis_vendor|/proc/scsi/scsi|/proc/ide/hd0/model|/proc/version|/etc/.*version|/etc/.*release|/etc/issue) \var\log\audit\audit.log ) informational
-;
-grep type\s?=\s?EXECVE \var\log\audit\audit.log | grep < ( grep (shutdown|reboot|halt|poweroff) \var\log\audit\audit.log ; grep < ( grep (init|telinit) \var\log\audit\audit.log ) | grep < ( grep (0|6) \var\log\audit\audit.log ) ) informational
-;
-grep Image\s?=\s?.*/file \var\log\syslog | grep CommandLine\s?=\s?(.){200,} ; grep Image\s?=\s?.*/ls \var\log\syslog | grep CommandLine\s?=\s?.*-R.* ; grep Image\s?=\s?.*/find \var\log\syslog ; grep Image\s?=\s?.*/tree \var\log\syslog informational
-;
-grep Image\s?=\s?(.*/rm|.*/shred|.*/unlink) \var\log\syslog informational
-;
-grep Image\s?=\s?(.*/ps|.*/top) \var\log\syslog informational
-;
-grep Image\s?=\s?(.*/uname|.*/hostname|.*/uptime|.*/lspci|.*/dmidecode|.*/lscpu|.*/lsmod) \var\log\syslog informational
-;
-grep Image\s?=\s?(.*/firewall-cmd|.*/ufw|.*/iptables|.*/netstat|.*/ss|.*/ip|.*/ifconfig|.*/systemd-resolve|.*/route) \var\log\syslog ; grep CommandLine\s?=\s?.*/etc/resolv\.conf.* \var\log\syslog informational
+grep -E type\s?=\s?PATH /var/log/audit/audit.log | grep -E $( grep -E 'name\s?=\s?(/sys/class/dmi/id/bios_version|/sys/class/dmi/id/product_name|/sys/class/dmi/id/chassis_vendor|/proc/scsi/scsi|/proc/ide/hd0/model|/proc/version|/etc/.*version|/etc/.*release|/etc/issue)' /var/log/audit/audit.log )
+grep -E type\s?=\s?EXECVE /var/log/audit/audit.log | grep -E $( grep -E '(shutdown|reboot|halt|poweroff)' /var/log/audit/audit.log ; grep -E $( grep -E '(init|telinit)' /var/log/audit/audit.log ) | grep -E $( grep -E '(0|6)' /var/log/audit/audit.log ) )
+grep -E 'Image\s?=\s?.*/file' /var/log/syslog | grep -E -E 'CommandLine\s?=\s?(.){200,}' ; grep -E 'Image\s?=\s?.*/ls' /var/log/syslog | grep -E 'CommandLine\s?=\s?.*-R.*' ; grep -E 'Image\s?=\s?.*/find' /var/log/syslog ; grep -E 'Image\s?=\s?.*/tree' /var/log/syslog
+grep -E 'Image\s?=\s?(.*/rm|.*/shred|.*/unlink)' /var/log/syslog
+grep -E 'Image\s?=\s?(.*/ps|.*/top)' /var/log/syslog
+grep -E 'Image\s?=\s?(.*/uname|.*/hostname|.*/uptime|.*/lspci|.*/dmidecode|.*/lscpu|.*/lsmod)' /var/log/syslog
+grep -E 'Image\s?=\s?(.*/firewall-cmd|.*/ufw|.*/iptables|.*/netstat|.*/ss|.*/ip|.*/ifconfig|.*/systemd-resolve|.*/route)' /var/log/syslog ; grep -E 'CommandLine\s?=\s?.*/etc/resolv\.conf.*' /var/log/syslog
