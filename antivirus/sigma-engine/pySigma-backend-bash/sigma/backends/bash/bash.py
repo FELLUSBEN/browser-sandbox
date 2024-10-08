@@ -24,7 +24,7 @@ class bashBackend(TextQueryBackend):
     # Operator precedence: tuple of Condition{AND,OR,NOT} in order of precedence.
     # The backend generates grouping if required
     precedence : ClassVar[Tuple[ConditionItem, ConditionItem, ConditionItem]] = (ConditionNOT, ConditionAND, ConditionOR)
-    group_expression : ClassVar[str] = "-fF <( grep {expr} )"   # Expression for precedence override grouping as format string with {expr} placeholder
+    group_expression : ClassVar[str] = "-Ff <( grep {expr} )"   # Expression for precedence override grouping as format string with {expr} placeholder
 
     # Generated query tokens
     token_separator : str = ""     # separator inserted between all boolean operators
@@ -105,9 +105,9 @@ class bashBackend(TextQueryBackend):
     list_separator : ClassVar[str] = "|"               # List element separator
 
     # Value not bound to a field
-    unbound_value_str_expression : ClassVar[str] = '{value}'   # Expression for string value not bound to a field as format string with placeholder {value}
-    unbound_value_num_expression : ClassVar[str] = '{value}'     # Expression for number value not bound to a field as format string with placeholder {value}
-    unbound_value_re_expression : ClassVar[str] = '{value}'   # Expression for regular expression not bound to a field as format string with placeholder {value} and {flag_x} as described for re_expression TODO:needs ferther inspection
+    unbound_value_str_expression : ClassVar[str] = "'\\b{value}\\b'"   # Expression for string value not bound to a field as format string with placeholder {value}
+    unbound_value_num_expression : ClassVar[str] = "'\\b{value}\\b'"     # Expression for number value not bound to a field as format string with placeholder {value}
+    unbound_value_re_expression : ClassVar[str] = "'\\b{value}\\b'"   # Expression for regular expression not bound to a field as format string with placeholder {value} and {flag_x} as described for re_expression TODO:needs ferther inspection
 
     # Query finalization: appending and concatenating deferred query part TODO:needs ferther inspection
     deferred_start : ClassVar[str] = "\n| "               # String used as separator between main query and deferred parts
@@ -176,7 +176,7 @@ class bashBackend(TextQueryBackend):
                     else str(field + op + arg.value)  # value is number
                     for arg in cond.args
                 ]
-                values[0] += " " + str(cond.source.path.as_posix()) if cond.source else ''
+                values[0] ="-E " + values[0] + " " + str(cond.source.path.as_posix()) if cond.source else ''
                 return " | grep -E ".join(values)
             
             else:
@@ -190,7 +190,7 @@ class bashBackend(TextQueryBackend):
                     else str(arg.value)  # value is number
                     for arg in cond.args
                 ]
-                values[0] += " " + str(cond.source.path.as_posix()) if cond.source else ''
+                values[0] ="-E " + values[0] + " " + str(cond.source.path.as_posix()) if cond.source else ''
                 return " | grep -E ".join(values)
             
             else:
