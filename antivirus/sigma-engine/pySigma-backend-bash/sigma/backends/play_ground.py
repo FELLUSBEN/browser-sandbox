@@ -47,6 +47,7 @@ for rule in rules:
     elif level == 'informational':
         informational_rules.append(rule)
 
+
  # Define the levels
 levels = ['critical', 'high', 'medium', 'low', 'informational']
 
@@ -136,29 +137,35 @@ for level in levels:
 # # generic test rule
 # print(bash_backend().convert(
 #         SigmaCollection.from_yaml("""
-#             title: Buffer Overflow Attempts
-#             id: 18b042f0-2ecd-4b6e-9f8d-aa7a7e7de781
-#             status: stable
-#             description: Detects buffer overflow attempts in Unix system log files
+#             title: Webshell Remote Command Execution
+#             id: c0d3734d-330f-4a03-aae2-65dacc6a8222
+#             status: test
+#             description: Detects possible command execution by web application/web shell
 #             references:
-#                 - https://github.com/ossec/ossec-hids/blob/1ecffb1b884607cb12e619f9ab3c04f530801083/etc/rules/attack_rules.xml
-#             author: Florian Roth (Nextron Systems)
-#             date: 2017-03-01
+#                 - Personal Experience of the Author
+#             author: Ilyas Ochkov, Beyu Denis, oscd.community
+#             date: 2019-10-12
+#             modified: 2022-12-25
 #             tags:
-#                 - attack.t1068
-#                 - attack.privilege-escalation
+#                 - attack.persistence
+#                 - attack.t1505.003
 #             logsource:
 #                 product: linux
+#                 service: auditd
 #             detection:
-#                 keywords:
-#                     - 'attempt to execute code on stack by'
-#                     - 'FTP LOGIN FROM .* 0bin0sh'
-#                     - 'rpc.statd[\d+]: gethostbyname error for'
-#                     - 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
-#                 condition: keywords
+#                 selection:
+#                     # You need to add to the following rules to your auditd.conf config:
+#                     #   -a always,exit -F arch=b32 -S execve -F euid=33 -k detect_execve_www
+#                     #   -a always,exit -F arch=b64 -S execve -F euid=33 -k detect_execve_www
+#                     # Change the number "33" to the ID of your WebServer user. Default: www-data:x:33:33
+#                     type: 'SYSCALL'
+#                     syscall: 'execve'
+#                     key: 'detect_execve_www'
+#                 condition: selection
 #             falsepositives:
-#                 - Unknown
-#             level: high
+#                 - Admin activity
+#                 - Crazy web applications
+#             level: critical
 #         """)
 #     ))
 

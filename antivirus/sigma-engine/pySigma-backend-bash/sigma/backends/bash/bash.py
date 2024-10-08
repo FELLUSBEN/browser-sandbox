@@ -1,4 +1,4 @@
-from sigma.conditions import ConditionAND, ConditionOR
+from sigma.conditions import ConditionAND, ConditionFieldEqualsValueExpression, ConditionOR
 from sigma.conversion.deferred import DeferredQueryExpression
 from sigma.conversion.state import ConversionState
 from sigma.processing.pipeline import ProcessingPipeline
@@ -24,12 +24,12 @@ class bashBackend(TextQueryBackend):
     # Operator precedence: tuple of Condition{AND,OR,NOT} in order of precedence.
     # The backend generates grouping if required
     precedence : ClassVar[Tuple[ConditionItem, ConditionItem, ConditionItem]] = (ConditionNOT, ConditionAND, ConditionOR)
-    group_expression : ClassVar[str] = "$( grep -E {expr} )"   # Expression for precedence override grouping as format string with {expr} placeholder
+    group_expression : ClassVar[str] = "-fF <( grep {expr} )"   # Expression for precedence override grouping as format string with {expr} placeholder
 
     # Generated query tokens
     token_separator : str = ""     # separator inserted between all boolean operators
-    or_token : ClassVar[str] = " ; grep -E " # |
-    and_token : ClassVar[str] = " | grep -E " # .*
+    or_token : ClassVar[str] = " ; grep " # |
+    and_token : ClassVar[str] = " | grep " # .*
     not_token : ClassVar[str] = "-v "
     eq_token : ClassVar[str] = "\\s?=\\s?"  # Token inserted between field and value (without separator)
 
@@ -53,15 +53,15 @@ class bashBackend(TextQueryBackend):
     }
 
     # String matching operators. if none is appropriate eq_token is used.
-    startswith_expression : ClassVar[str] = "'{field}\\s?=\\s?{value}.*'"
-    endswith_expression   : ClassVar[str] = "'{field}\\s?=\\s?.*{value}'"
-    contains_expression   : ClassVar[str] = "'{field}\\s?=\\s?.*{value}.*'" 
+    startswith_expression : ClassVar[str] = "{field}\\s?=\\s?{value}.*"
+    endswith_expression   : ClassVar[str] = "{field}\\s?=\\s?.*{value}"
+    contains_expression   : ClassVar[str] = "{field}\\s?=\\s?.*{value}.*" 
 
     # Regular expressions
     # Regular expression query as format string with placeholders {field}, {regex}, {flag_x} where x
     # is one of the flags shortcuts supported by Sigma (currently i, m and s) and refers to the
     # token stored in the class variable re_flags.
-    re_expression : ClassVar[str] = "-E '{field}\\s?=\\s?{regex}{flag_i}'"
+    re_expression : ClassVar[str] = "{field}\\s?=\\s?{regex}{flag_i}"
     re_escape_char : ClassVar[str] = "\\"               # Character used for escaping in regular expressions
     re_escape : ClassVar[Tuple[str]] = ()               # List of strings that are escaped 
     re_escape_escape_char : bool = False                 # If True, the escape character is also escaped
@@ -76,7 +76,7 @@ class bashBackend(TextQueryBackend):
     }
 
     # Numeric comparison operators
-    compare_op_expression : ClassVar[str] = "'{field}\\s?=\\s?{value}'"  # Compare operation query as format string with placeholders {field}, {operator} and {value}
+    compare_op_expression : ClassVar[str] = "-E '\\b{field}\\s?=\\s?{value}'"  # Compare operation query as format string with placeholders {field}, {operator} and {value}
     # Mapping between CompareOperators elements and strings used as replacement for {operator} in compare_op_expression
     compare_operators : ClassVar[Dict[SigmaCompareExpression.CompareOperators, str]] = {
         SigmaCompareExpression.CompareOperators.LT: "lt",
@@ -86,20 +86,20 @@ class bashBackend(TextQueryBackend):
     }
 
     # Expression for comparing two event fields
-    field_equals_field_expression : ClassVar[Optional[str]] = "'{field1}\\s?=\\s?{field2}'"  # Field comparison expression with the placeholders {field1} and {field2} corresponding to left field and right value side of Sigma detection item
+    field_equals_field_expression : ClassVar[Optional[str]] = "-e '\\b{field1}\s?=\s?(.*).*?\\b{field2}\s?=\s?\1\\b' -e '\\b{field2}\s?=\s?(.*).*?\\b{field1}\s?=\s?\1\\b'"  # Field comparison expression with the placeholders {field1} and {field2} corresponding to left field and right value side of Sigma detection item
 
     # Null/None expressions
-    field_null_expression : ClassVar[str] = "'{field}\\s?=\\s?\\^@'"          # Expression for field has null value as format string with {field} placeholder for field name 
+    field_null_expression : ClassVar[str] = "{field}\\s?=\\s?(null|""|N/A|)"          # Expression for field has null value as format string with {field} placeholder for field name 
 
     # Field existence condition expressions.
-    field_exists_expression : ClassVar[str] = "'{field}\\s?(=|:)'"             # Expression for field existence as format string with {field} placeholder for field name
-    field_not_exists_expression : ClassVar[str] = "'[^({field}\\s?(=|:))]'"      # Expression for field non-existence as format string with {field} placeholder for field name. If not set, field_exists_expression is negated with boolean NOT.
+    field_exists_expression : ClassVar[str] = "fieldA\\s?=\\s?[^\s]+"             # Expression for field existence as format string with {field} placeholder for field name
+    field_not_exists_expression : ClassVar[str] = "^(?!.*\\bfieldA\\s?=).*$"      # Expression for field non-existence as format string with {field} placeholder for field name. If not set, field_exists_expression is negated with boolean NOT.
 
     # Field value in list, e.g. "field in (value list)" or "field containsall (value list)" 
     convert_or_as_in : ClassVar[bool] = True                     # Convert OR as in-expression
     convert_and_as_in : ClassVar[bool] = True                   # Convert AND as in-expression 
     in_expressions_allow_wildcards : ClassVar[bool] = True       # Values in list can contain wildcards. If set to False (default) only plain values are converted into in-expressions.
-    field_in_list_expression : ClassVar[str] = "'{field}{op}({list})'"  # Expression for field in list of values as format string with placeholders {field}, {op} and {list}
+    field_in_list_expression : ClassVar[str] = "-E '\\b{field}{op}({list})'"  # Expression for field in list of values as format string with placeholders {field}, {op} and {list}
     or_in_operator : ClassVar[str] = f"\\s?=\\s?"               # Operator used to convert OR into in-expressions. Must be set if convert_or_as_in is set
     and_in_operator : ClassVar[str] = f"\\s?=\\s?"              # Operator used to convert and into in-expressions. Must be set if convert_and_as_in is set
     list_separator : ClassVar[str] = "|"               # List element separator
@@ -171,7 +171,7 @@ class bashBackend(TextQueryBackend):
                 field = self.escape_and_quote_field(cond.args[0].field)  # The assumption that the field is the same for all argument is valid because this is checked before
                 op = self.and_in_operator
                 values = [
-                    str("'" + field + op + self.convert_value_str(arg.value, state) + "'")
+                    str("'\\b" + field + op + self.convert_value_str(arg.value, state) + "\\b'")
                     if isinstance(arg.value, SigmaString)  # string escaping and qouting
                     else str(field + op + arg.value)  # value is number
                     for arg in cond.args
@@ -185,7 +185,7 @@ class bashBackend(TextQueryBackend):
         else:
             if isinstance(cond, ConditionAND):
                 values = [
-                    str("'" + self.convert_value_str(arg.value, state) + "'")
+                    str("'\\b" + self.convert_value_str(arg.value, state) + "\\b'")
                     if isinstance(arg.value, SigmaString)  # string escaping and qouting
                     else str(arg.value)  # value is number
                     for arg in cond.args
@@ -207,6 +207,11 @@ class bashBackend(TextQueryBackend):
                     ),
                 )
        
+    def convert_condition_field_eq_val(self, cond: ConditionFieldEqualsValueExpression, state: ConversionState) -> Any:
+        if isinstance(cond.value, SigmaFieldReference):
+            return super().convert_condition_field_eq_val(cond, state)
+        return "-E '\\b" + str(super().convert_condition_field_eq_val(cond, state)) + "\\b'"
+    
     def finalize_query_default(self, rule: SigmaRule, query: str, index: int, state: ConversionState) -> str:
         # TODO: implement the per-query output for the output format {{ format }} here. Usually, the generated query is
         # embedded into a template, e.g. a JSON format with additional information from the Sigma rule.
@@ -215,7 +220,7 @@ class bashBackend(TextQueryBackend):
         #     filter = f'-FilterHashTable @{{LogName = "{rule.logsource.service}"; Id = {rule.eventid}}} | '
         # else:
         #     filter = f'-LogName "{rule.logsource.service}" | '
-        return f"grep -E {query}"
+        return f"grep {query}"
 
     def finalize_output_default(self, queries: List[str]) -> str:
         # TODO: implement the output finalization for all generated queries for the format {{ format }} here. Usually,

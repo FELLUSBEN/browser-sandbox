@@ -1,4 +1,4 @@
-grep -E 'a1\s?=\s?--cpu-priority.*' /var/log/audit/audit.log ; grep -E 'a2\s?=\s?--cpu-priority.*' /var/log/audit/audit.log ; grep -E 'a3\s?=\s?--cpu-priority.*' /var/log/audit/audit.log ; grep -E 'a4\s?=\s?--cpu-priority.*' /var/log/audit/audit.log ; grep -E 'a5\s?=\s?--cpu-priority.*' /var/log/audit/audit.log ; grep -E 'a6\s?=\s?--cpu-priority.*' /var/log/audit/audit.log ; grep -E 'a7\s?=\s?--cpu-priority.*' /var/log/audit/audit.log
-grep -E type\s?=\s?SYSCALL /var/log/audit/audit.log | grep -E syscall\s?=\s?execve | grep -E key\s?=\s?detect_execve_www
-grep -E 'USER\s?=\s?(#-.*|#.*4294967295)' /var/log/auth.log
-grep -E 'Image\s?=\s?.*/bin/bash' /var/log/syslog | grep -E -v $( grep -E 'DestinationIp\s?=\s?(127\.0\.0\.1|0\.0\.0\.0)' /var/log/syslog )
+grep -E '\ba1\s?=\s?--cpu-priority.*\b' /var/log/audit/audit.log ; grep -E '\ba2\s?=\s?--cpu-priority.*\b' /var/log/audit/audit.log ; grep -E '\ba3\s?=\s?--cpu-priority.*\b' /var/log/audit/audit.log ; grep -E '\ba4\s?=\s?--cpu-priority.*\b' /var/log/audit/audit.log ; grep -E '\ba5\s?=\s?--cpu-priority.*\b' /var/log/audit/audit.log ; grep -E '\ba6\s?=\s?--cpu-priority.*\b' /var/log/audit/audit.log ; grep -E '\ba7\s?=\s?--cpu-priority.*\b' /var/log/audit/audit.log
+grep -E '\btype\s?=\s?SYSCALL\b' /var/log/audit/audit.log | grep -E '\bsyscall\s?=\s?execve\b' | grep -E '\bkey\s?=\s?detect_execve_www\b'
+grep -E '\bUSER\s?=\s?(#-.*|#.*4294967295)' /var/log/auth.log
+grep -E '\bImage\s?=\s?.*/bin/bash\b' /var/log/syslog | grep -v -fF <( grep -E '\bDestinationIp\s?=\s?(127\.0\.0\.1|0\.0\.0\.0)' /var/log/syslog )
