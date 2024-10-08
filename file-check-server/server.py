@@ -12,7 +12,7 @@ app = Flask(__name__)
 
 DATABASE_FILE = "file_hashes.db"
 UPLOAD_FOLDER = 'uploads'
-MAX_FILE_SIZE = 100 * 1024 * 1024  # 100 MB
+MAX_FILE_SIZE = 200 * 1024 * 1024  # 200 MB
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = MAX_FILE_SIZE
@@ -119,6 +119,7 @@ def create_lock():
 @app.route('/upload', methods=['POST'])
 def upload_file():
     try:
+
         if 'file' not in request.files:
             return jsonify({"error": "No file part"}), 400
 
@@ -126,7 +127,6 @@ def upload_file():
         
         if file.filename == '':
             return jsonify({"error": "No selected file"}), 400
-
 
         if file:
             filename = file.filename
@@ -138,14 +138,12 @@ def upload_file():
             filehash = hashfile(filepath)
             print(filehash)
             tmp = is_hash_in_db(filehash)
-            print(tmp)
             if tmp != None:
                 os.remove(filepath)
                 if tmp == True:
                     return jsonify({"is_valid": False, "message": "file is a virus"})
                 else:
                     return jsonify({"is_valid": True, "message": "file is okay."})
-            
             
             user_ip = request.remote_addr
             lock = user_locks.get(user_ip)
