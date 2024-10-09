@@ -26,7 +26,7 @@ grep -E '\bTargetFilename\s?=\s?.*/etc/profile\.d/.*\b' /var/log/syslog | grep -
 grep -E '\bImage\s?=\s?(.*/at|.*/atd)' /var/log/syslog
 grep -E '\bImage\s?=\s?.*/base64\b' /var/log/syslog | grep -E '\bCommandLine\s?=\s?.*-d.*\b'
 grep -E '\bImage\s?=\s?.*/bash\b' /var/log/syslog | grep -E '\bCommandLine\s?=\s?.* -i .*\b'
-grep -E '\bImage\s?=\s?.*xclip.*\b' /var/log/syslog | grep  | grep -E '\bCommandLine\s?=\s?.*clip.*\b' | grep -E '\bCommandLine\s?=\s?.*-o.*\b'
+grep -E '\bImage\s?=\s?.*xclip.*\b' /var/log/syslog | grep -E '\bCommandLine\s?=\s?.*-sel.*\b' | grep -E '\bCommandLine\s?=\s?.*clip.*\b' | grep -E '\bCommandLine\s?=\s?.*-o.*\b'
 grep -E '\bImage\s?=\s?.*/crontab\b' /var/log/syslog | grep -E '\bCommandLine\s?=\s?.* -l.*\b'
 grep -E '\bImage\s?=\s?.*/curl\b' /var/log/syslog
 grep -Ff <( grep -E '\bImage\s?=\s?(/bin/dd|/usr/bin/dd)' /var/log/syslog ) | grep -E '\bCommandLine\s?=\s?.*of=.*\b' | grep -Ff <( grep -E '\bCommandLine\s?=\s?(.*if=/dev/zero.*|.*if=/dev/null.*)' /var/log/syslog )
@@ -34,7 +34,7 @@ grep -E '\bImage\s?=\s?.*/doas\b' /var/log/syslog
 grep -E '\bImage\s?=\s?.*/grep\b' /var/log/syslog | grep -Ff <( grep -E '\bCommandLine\s?=\s?(.*aarch64|.*arm|.*i386|.*i686|.*mips|.*x86_64)' /var/log/syslog )
 grep -E '\bImage\s?=\s?(.*/update-ca-certificates|.*/update-ca-trust)' /var/log/syslog
 grep -E '\bImage\s?=\s?(.*/kill|.*/pkill|.*/killall)' /var/log/syslog
-grep -E '\bImage\s?=\s?.*/lastlog\b' /var/log/syslog ; grep -E '\bCommandLine\s?=\s?.*'x:0:'.*\b' /var/log/syslog ; grep -Ff <( grep -E '\bImage\s?=\s?(.*/cat|.*/head|.*/tail|.*/more)' /var/log/syslog ) | grep -Ff <( grep -E '\bCommandLine\s?=\s?(.*/etc/passwd.*|.*/etc/shadow.*|.*/etc/sudoers.*)' /var/log/syslog ) ; grep -E '\bImage\s?=\s?.*/id\b' /var/log/syslog ; grep -E '\bImage\s?=\s?.*/lsof\b' /var/log/syslog | grep -E '\bCommandLine\s?=\s?.*-u.*\b'
+grep -E '\bImage\s?=\s?.*/lastlog\b' /var/log/syslog ; grep -E '\bCommandLine\s?=\s?.*''x:0:''.*\b' /var/log/syslog ; grep -Ff <( grep -E '\bImage\s?=\s?(.*/cat|.*/head|.*/tail|.*/more)' /var/log/syslog ) | grep -Ff <( grep -E '\bCommandLine\s?=\s?(.*/etc/passwd.*|.*/etc/shadow.*|.*/etc/sudoers.*)' /var/log/syslog ) ; grep -E '\bImage\s?=\s?.*/id\b' /var/log/syslog ; grep -E '\bImage\s?=\s?.*/lsof\b' /var/log/syslog | grep -E '\bCommandLine\s?=\s?.*-u.*\b'
 grep -E '\bImage\s?=\s?.*/groups\b' /var/log/syslog ; grep -Ff <( grep -E '\bImage\s?=\s?(.*/cat|.*/head|.*/tail|.*/more)' /var/log/syslog ) | grep -E '\bCommandLine\s?=\s?.*/etc/group.*\b'
 grep -E '\bImage\s?=\s?.*/mkfifo\b' /var/log/syslog
 grep -E '\bCommandLine\s?=\s?(.*http_proxy=.*|.*https_proxy=.*)' /var/log/syslog
@@ -45,6 +45,6 @@ grep -Ff <( grep -E '\bImage\s?=\s?(.*/grep|.*/egrep)' /var/log/syslog ) | grep 
 grep -E '\bCommandLine\s?=\s?.*chown root.*\b' /var/log/syslog | grep -Ff <( grep -E '\bCommandLine\s?=\s?(.* chmod u\+s.*|.* chmod g\+s.*)' /var/log/syslog )
 grep -Ff <( grep -E '\bImage\s?=\s?(.*awk|.*/cat|.*grep|.*/head|.*/less|.*/more|.*/nl|.*/tail)' /var/log/syslog ) | grep -Ff <( grep -E '\bCommandLine\s?=\s?.*/proc/2/.*\b' /var/log/syslog ; grep -E '\bCommandLine\s?=\s?.*/proc/.*\b' /var/log/syslog | grep -Ff <( grep -E '\bCommandLine\s?=\s?(.*/cgroup|.*/sched)' /var/log/syslog ) )
 grep -Ff <( grep -E '\bImage\s?=\s?(.*/cat|.*/dir|.*/find|.*/ls|.*/stat|.*/test|.*grep)' /var/log/syslog ) | grep -E '\bCommandLine\s?=\s?.*\.dockerenv\b'
-grep -E '\bImage\s?=\s?.*/ls\b' /var/log/syslog | grep  | grep -E '\bCommandLine\s?=\s?.* -.*d.*\b' | grep -E '\bCommandLine\s?=\s?.* /\b'
+grep -E '\bImage\s?=\s?.*/ls\b' /var/log/syslog | grep -E '\bCommandLine\s?=\s?.* -.*i.*\b' | grep -E '\bCommandLine\s?=\s?.* -.*d.*\b' | grep -E '\bCommandLine\s?=\s?.* /\b'
 grep -Ff <( grep -E '\bImage\s?=\s?(.*/nc|.*/ncat|.*/netcat|.*/socat)' /var/log/syslog ) | grep -v -Ff <( grep -E '\bCommandLine\s?=\s?(.* --listen .*|.* -l .*)' /var/log/syslog ) ; grep -E '\bImage\s?=\s?(.*/autorecon|.*/hping|.*/hping2|.*/hping3|.*/naabu|.*/nmap|.*/nping|.*/telnet|.*/zenmap)' /var/log/syslog
 grep -Ff <( grep -E '\bImage\s?=\s?(.*/who|.*/w|.*/last|.*/lsof|.*/netstat)' /var/log/syslog ) | grep -v -Ff <( grep -E '\bParentCommandLine\s?=\s?.*/usr/bin/landscape-sysinfo.*\b' /var/log/syslog | grep -E '\bImage\s?=\s?.*/who\b' )

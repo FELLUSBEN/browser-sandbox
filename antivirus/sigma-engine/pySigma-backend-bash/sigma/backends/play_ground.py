@@ -47,7 +47,7 @@ for rule in rules:
     elif level == 'informational':
         informational_rules.append(rule)
 
-print(low_rules[48])
+# print(low_rules[48])
 
  # Define the levels
 levels = ['critical', 'high', 'medium', 'low', 'informational']
