@@ -5,6 +5,7 @@ RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
     python3-psutil \
+    auditd \ 
     file \
     && apt-get clean
 
@@ -18,6 +19,9 @@ COPY libapilog.so /app/libapilog.so
 
 COPY malicious_check.py /app/malicious_check.py
 
+COPY passwords.txt /app/password.txt
+
 RUN chmod +x /app/runner.sh
+RUN auditd -f &
 
 ENTRYPOINT ["/app/runner.sh"]
