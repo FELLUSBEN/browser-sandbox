@@ -120,6 +120,9 @@ class bashBackend(TextQueryBackend):
     def convert_value_str(self, s, state): #the cherecter ' should be escaped bat by doubling it, and not by adding beckslash
         return super().convert_value_str(s, state).replace("'","''")
     
+    def convert_value_re(self, r, state): #the cherecter ' should be escaped bat by doubling it, and not by adding beckslash
+        return super().convert_value_re(r, state).replace("'","''")
+    
     def convert_condition(self, cond: ConditionOR | ConditionAND | ConditionNOT | ConditionFieldEqualsValueExpression | ConditionValueExpression, state: ConversionState) -> Any:
         return super().convert_condition(cond, state) + " " + str(cond.source.path.as_posix()) if cond.source and (not isinstance(cond,(ConditionAND,ConditionOR)) or (isinstance(cond,(ConditionOR)) and self.decide_convert_condition_as_in_expression(cond, state))) else super().convert_condition(cond, state)
     
