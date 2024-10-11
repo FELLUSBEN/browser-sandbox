@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# 1. Simulate creating a suspicious hidden file in a sensitive directory
+touch /tmp/.hidden_malicious_file
+
+# 2. Simulate downloading a file (without actually downloading)
+echo "Simulating file download..." > /tmp/downloaded_file.txt
+
+# 3. Simulate privilege escalation attempt (no real privilege escalation, just an attempt)
+sudo echo "Simulating sudo command usage" > /dev/null 2>&1
+
+# 4. Simulate running a reverse shell-like command (this won't actually do anything harmful)
+bash -i >& /dev/tcp/127.0.0.1/9999 0>&1 2>/dev/null &
+
+# 5. Simulate adding a user to the system (without real changes)
+sudo useradd attacker_test_user > /dev/null 2>&1
+
+# 6. Simulate modifying sensitive configuration files (read-only in this case)
+echo "Attempt to modify /etc/hosts" >> /etc/hosts 2>/dev/null
+echo "Attempt to modify /etc/passwd" >> /etc/passwd 2>/dev/null
+
+# 7. Simulate malicious process running in the background
+malicious_process() {
+  while true; do
+    echo "Malicious process running..." > /tmp/malicious_log.txt
+    sleep 5
+  done
+}
+malicious_process &
+
+# 8. Simulate port scanning or network scanning behavior
+nmap 127.0.0.1 > /dev/null 2>&1
+
+# 9. Cleanup: Stop background processes and remove test files
+kill $!  # Kills the malicious process simulation
+rm -f /tmp/.hidden_malicious_file /tmp/downloaded_file.txt /tmp/malicious_log.txt
+
+echo "Advanced test completed! Check your logs for suspicious behavior."
