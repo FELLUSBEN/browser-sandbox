@@ -44,7 +44,7 @@ def init_db():
 def is_hash_in_db(file_hash):
     conn = sqlite3.connect(DATABASE_FILE)
     cursor = conn.cursor()
-    cursor.execute('SELECT hash FROM file_hashes WHERE hash = ?', (file_hash,))
+    cursor.execute('SELECT is_flaged FROM file_hashes WHERE hash = ?', (file_hash,))
     result = cursor.fetchone()
     conn.close()
     if result:
@@ -93,18 +93,31 @@ def run_sandbox(file_path):
 
 
 def file_checks(filepath):
+    print("test")
     result = {
         "is_valid": True,
-        "message": "File is okay.",
+        "message": "okay.",
     }
     if engine.CheckFile(filepath):
-        print("test static")
         result["is_valid"] = False
-        result["message"] = "File is a virus"
-    if "malicious" in run_sandbox(filepath):
-        print("test dynamic")
+        result["message"] = "malicious"
+
+    sandbox_output =  run_sandbox(filepath)
+
+    if "malicious" in sandbox_output:
         result["is_valid"] = False
-        result["message"] = "File is a virus"
+        if "informational" in sandbox_output:
+            result["message"] = "malicious - informational level"
+        elif "low" in sandbox_output:
+            result["message"] = "malicious - low level"
+        elif "medium" in sandbox_output:
+            result["message"] = "malicious - medium level"
+        elif "high" in sandbox_output:
+            result["message"] = "malicious - high level"
+        else:
+            result["message"] = "malicious - critical level"
+
+        print(result["message"])
 
     #print(result["is_valid"])
     return result
@@ -141,7 +154,8 @@ def upload_file():
             if tmp != None:
                 os.remove(filepath)
                 if tmp == True:
-                    return jsonify({"is_valid": False, "message": "file is a virus"})
+                    print("Test")
+                    return jsonify({"is_valid": False, "message": "virus"})
                 else:
                     return jsonify({"is_valid": True, "message": "file is okay."})
             

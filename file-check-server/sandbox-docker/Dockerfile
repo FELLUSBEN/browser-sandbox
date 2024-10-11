@@ -17,9 +17,19 @@ COPY runner.sh /app/runner.sh
 
 COPY libapilog.so /app/libapilog.so
 
+COPY low.txt /app/low.sh
+
+COPY medium.txt /app/medium.sh
+
+COPY high.txt /app/high.sh
+
+COPY critical.txt /app/critical.sh
+
+COPY informational.txt /app/informational.sh
+
 COPY malicious_check.py /app/malicious_check.py
 
-COPY passwords.txt /app/password.txt
+COPY passwords.txt /app/passwords.txt
 
 RUN chmod +x /app/runner.sh
 RUN auditd -f &

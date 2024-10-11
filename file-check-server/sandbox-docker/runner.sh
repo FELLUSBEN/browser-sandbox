@@ -20,6 +20,10 @@ case $file_type in
     echo "Checking binary executable: $1"
     chmod +x "$1" 
     result=$(check_malicious "$1")
+    if [ "$result" = "malicious" ]; then
+      echo "file is malicious - critical level"
+      exit 0
+    fi
     ;;
   *)
     echo "Unsupported file type: $file_type"
@@ -37,18 +41,18 @@ current_time=$(date +%s)
 time_diff=$((current_time - last_access_time))
 
 if [ $time_diff -le 29 ]; then
-    result="malicous"
+    result="malicious"
 fi
-
-
 
 for script in "${bash_files[@]}"; do
         output=$("./$script")
 
         if [[ -n "$output" ]]; then
-          result="malicious"
+          # result="malicious"
+          echo "malicious-${script}"
+          exit 0
         fi
-done                                    
+done                                   
 
 if [ "$result" == "malicious" ]; then
   echo "The executable is malicious and has been terminated."

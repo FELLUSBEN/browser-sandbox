@@ -7,7 +7,7 @@ import requests
 import json
 import os
 
-FILE_CHECK_SERVER_IP = "10.100.102.24"
+FILE_CHECK_SERVER_IP = "192.168.1.100"
 
 class Watcher(FileSystemEventHandler):
     def on_created(self, event: FileSystemEvent) -> None:
@@ -30,14 +30,14 @@ class Watcher(FileSystemEventHandler):
             os.rename(event.src_path, event.src_path +"-malicious")
             root = tk.Tk()
             root.withdraw()
-            messagebox.showerror("Found a potential threat!", f"The file {event.src_path.split('/')[-1]} seems to be malicious!\n")
+            messagebox.showerror("Found a potential threat!", f"The file {event.src_path.split('/')[-1]} is {data["message"]}")
             root.update_idletasks()
             root.update()
         else:
             os.rename(event.src_path, event.src_path +"-benign")
             root = tk.Tk()
             root.withdraw()
-            messagebox.showerror("Download Complete", f"The file {event.src_path.split('/')[-1]} seems to be benign\n")
+            messagebox.showinfo("Download Complete", f"The file {event.src_path.split('/')[-1]} seems to be benign\n")
             root.update_idletasks()
             root.update()
 
