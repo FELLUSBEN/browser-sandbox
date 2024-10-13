@@ -32,6 +32,11 @@ COPY malicious_check.py /app/malicious_check.py
 COPY passwords.txt /app/passwords.txt
 
 RUN chmod +x /app/runner.sh
-RUN auditd -f &
+
+COPY audit.rules /etc/audit/rules.d/audit.rules
+
+RUN service auditd restart
+
+
 
 ENTRYPOINT ["/app/runner.sh"]

@@ -7,7 +7,7 @@ import requests
 import json
 import os
 
-FILE_CHECK_SERVER_IP = "192.168.1.100"
+FILE_CHECK_SERVER_IP = "10.100.102.24"
 
 class Watcher(FileSystemEventHandler):
     def on_created(self, event: FileSystemEvent) -> None:
