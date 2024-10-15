@@ -1,3 +1,5 @@
+#!/bin/bash
+
 grep -E '\btype\s?=\s?PATH\b' /var/log/audit/audit.log | grep -Ff <( grep -E '\bname\s?=\s?(/etc/audit/.*|/etc/libaudit\.conf|/etc/audisp/.*)' /var/log/audit/audit.log )
 grep -E '\btype\s?=\s?EXECVE\b' /var/log/audit/audit.log | grep -Ff <( grep -E '\btruncate\b' /var/log/audit/audit.log | grep -E '\b-s\b' ; grep -E '\bdd\b' /var/log/audit/audit.log | grep -E '\bif=\b' | grep -v '\bof=\b' )
 grep -E '\btype\s?=\s?PATH\b' /var/log/audit/audit.log | grep -Ff <( grep -E '\bname\s?=\s?(/var/run/haldrund\.pid|/var/run/xinetd\.lock|/var/run/kdevrund\.pid)' /var/log/audit/audit.log )

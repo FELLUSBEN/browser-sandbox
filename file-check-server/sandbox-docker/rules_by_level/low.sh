@@ -1,3 +1,5 @@
+#!/bin/bash
+
 grep -E '\btype\s?=\s?EXECVE\b' /var/log/audit/audit.log | grep -E '\ba0\s?=\s?arecord\b' | grep -E '\ba1\s?=\s?-vv\b' | grep -E '\ba2\s?=\s?-fdat\b'
 grep -E '\btype\s?=\s?EXECVE\b' /var/log/audit/audit.log | grep -E '\ba0\s?=\s?getcap\b' | grep -E '\ba1\s?=\s?-r\b' | grep -E '\ba2\s?=\s?/\b'
 grep -E '\btype\s?=\s?EXECVE\b' /var/log/audit/audit.log | grep -E '\ba0\s?=\s?xclip\b' | grep -Ff <( grep -E '\ba1\s?=\s?(-selection|-sel)' /var/log/audit/audit.log ) | grep -Ff <( grep -E '\ba2\s?=\s?(clipboard|clip)' /var/log/audit/audit.log ) | grep -E '\ba3\s?=\s?-o\b'

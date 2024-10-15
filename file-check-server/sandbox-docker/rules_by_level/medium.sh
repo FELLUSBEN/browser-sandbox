@@ -1,3 +1,5 @@
+#!/bin/bash
+
 grep -E '\btype\s?=\s?EXECVE\b' /var/log/audit/audit.log | grep -E '\ba0\s?=\s?.*iptables\b' | grep -E '\ba1\s?=\s?-t\b' | grep -E '\ba2\s?=\s?nat\b' | grep -Ff <( grep -E '\b(--to-ports 42|--to-ports 43)' /var/log/audit/audit.log )
 grep -E '\btype\s?=\s?EXECVE\b' /var/log/audit/audit.log | grep '\btouch\b' | grep -Ff <( grep -E '\b(-t|-acmr|-d|-r)' /var/log/audit/audit.log )
 grep -E '\btype\s?=\s?EXECVE\b' /var/log/audit/audit.log | grep -E '\ba0\s?=\s?.*chattr.*\b' | grep -E '\ba1\s?=\s?.*-i.*\b'
@@ -61,7 +63,7 @@ grep -Ff <( grep -E '\bImage\s?=\s?(.*/cat|.*/head|.*/tail|.*/more)' /var/log/sy
 grep -E '\bParentCommandLine\s?=\s?bash -i\b' /var/log/syslog | grep -Ff <( grep -E '\bCommandLine\s?=\s?(.*-c import .*|.*base64.*|.*pty\.spawn.*)' /var/log/syslog ; grep -E '\bImage\s?=\s?(.*whoami|.*iptables|.*/ncat|.*/nc|.*/netcat)' /var/log/syslog )
 grep -Ff <( grep -E '\bCommandLine\s?=\s?(sh -c .*|bash -c .*)' /var/log/syslog ) | grep -Ff <( grep -E '\bCommandLine\s?=\s?(.*\| bash .*|.*\| sh .*|.*\|bash .*|.*\|sh .*)' /var/log/syslog ; grep -E '\bCommandLine\s?=\s?(.*\| bash|.*\| sh|.*\|bash|.* \|sh)' /var/log/syslog )
 grep -Ff <( grep -Ff <( grep -E '\bImage\s?=\s?(.*/cat|.*/echo|.*/grep|.*/head|.*/more|.*/tail)' /var/log/syslog ) | grep -E '\bCommandLine\s?=\s?.*>.*\b' ; grep -E '\bImage\s?=\s?(.*/emacs|.*/nano|.*/sed|.*/vi|.*/vim)' /var/log/syslog ) | grep -Ff <( grep -E '\bCommandLine\s?=\s?(.*/bin/login.*|.*/bin/passwd.*|.*/boot/.*|.*/etc/.*\.conf.*|.*/etc/cron\..*|.*/etc/crontab.*|.*/etc/hosts.*|.*/etc/init\.d.*|.*/etc/sudoers.*|.*/opt/bin/.*|.*/sbin.*|.*/usr/bin/.*|.*/usr/local/bin/.*)' /var/log/syslog )
-grep -Ff <( grep -E '\bImage\s?=\s?(.*/bash|.*/csh|.*/dash|.*/fish|.*/ksh|.*/sh|.*/zsh)' /var/log/syslog ) | grep -E '\bCommandLine\s?=\s?.* -c .*\b' | grep -E '\bCommandLine\s?=\s?.*/tmp/.*\b'
+#grep -Ff <( grep -E '\bImage\s?=\s?(.*/bash|.*/csh|.*/dash|.*/fish|.*/ksh|.*/sh|.*/zsh)' /var/log/syslog ) | grep -E '\bCommandLine\s?=\s?.* -c .*\b' | grep -E '\bCommandLine\s?=\s?.*/tmp/.*\b'
 grep -E '\bImage\s?=\s?.*/touch\b' /var/log/syslog | grep -E '\bCommandLine\s?=\s?.* -t .*\b' | grep -E '\bCommandLine\s?=\s?.*\.service\b'
 grep -E '\bImage\s?=\s?.*/userdel\b' /var/log/syslog
 grep -E '\bImage\s?=\s?.*/usermod\b' /var/log/syslog | grep -Ff <( grep -E '\bCommandLine\s?=\s?(.*-aG root.*|.*-aG sudoers.*)' /var/log/syslog )

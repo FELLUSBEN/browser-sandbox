@@ -17,15 +17,15 @@ COPY runner.sh /app/runner.sh
 
 COPY libapilog.so /app/libapilog.so
 
-COPY low.txt /app/low.sh
+COPY rules_by_level/low.sh /app/low.sh
 
-COPY medium.txt /app/medium.sh
+COPY rules_by_level/medium.sh /app/medium.sh
 
-COPY high.txt /app/high.sh
+COPY rules_by_level/high.sh /app/high.sh
 
-COPY critical.txt /app/critical.sh
+COPY rules_by_level/critical.sh /app/critical.sh
 
-COPY informational.txt /app/informational.sh
+COPY rules_by_level/informational.sh /app/informational.sh
 
 COPY malicious_check.py /app/malicious_check.py
 
