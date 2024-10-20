@@ -79,7 +79,7 @@ def run_sandbox(file_path):
     file_path = os.path.abspath(file_path)
     #print(file_path)
     docker_image = "sandbox"
-    host_dir = f'/home/shahafnachum/docker_shared/shared'
+    host_dir = f'/home/raz/docker_shared/shared'
     os.makedirs(host_dir, exist_ok=True)
     command = ["docker", "run", "--rm", "-v", f"{file_path}:/app/executable", docker_image,'-v', f'{host_dir}:/mnt/shared', "/app/executable"]
     # docker run --rm -v C:\Users\Ben\OneDrive\מסמכים\GitHub\browser-sandbox\file-check-server\sandbox-docker\a.out:/app/a.out sandbox /app/a.out
