@@ -53,20 +53,13 @@ def create_sandbox():
 
     print(session['user_id'])
     port_map[session['user_id']] = (port_2,port_3)
-    host_dir = f'/home/shahafnachum/docker_shared/shared'
-    os.makedirs(host_dir, exist_ok=True)
-    process = None
+    
     if url == "":
     # Run Docker without URL, but with shared folder
-        process = subprocess.Popen(['docker', 'run', '--name', f'{session["user_id"]}','-p', f'{str(port_1)}:5900','-p', f'{str(port_2)}:6080','-p', f'{str(port_3)}:9000','-e', f'SCREEN_WIDTH={width}','-e', f'SCREEN_HEIGHT={height}','-v', f'{host_dir}:/mnt/shared','test3'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        process = subprocess.Popen(['docker', 'run', '--name', f'{session["user_id"]}','-p', f'{str(port_1)}:5900','-p', f'{str(port_2)}:6080','-p', f'{str(port_3)}:9000','-e', f'SCREEN_WIDTH={width}','-e', f'SCREEN_HEIGHT={height}','test3'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     else:
     # Run Docker with URL and shared folder
-        process = subprocess.Popen(['docker', 'run', '--name', f'{session["user_id"]}','-p', f'{str(port_1)}:5900','-p', f'{str(port_2)}:6080','-p', f'{str(port_3)}:9000','-e', f'SCREEN_WIDTH={width}','-e', f'SCREEN_HEIGHT={height}','-e', f"URL={url}",'-v', f'{host_dir}:/mnt/shared', 'test3'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    docker_pid = process.pid
-    # Step 4: Create a file in the folder with the Docker process PID as the name
-    file_path = os.path.join(host_dir, f'{docker_pid}.txt')
-    with open(file_path, 'w') as pid_file:
-        pid_file.write(f'Docker process ID: {docker_pid}')
+        process = subprocess.Popen(['docker', 'run', '--name', f'{session["user_id"]}','-p', f'{str(port_1)}:5900','-p', f'{str(port_2)}:6080','-p', f'{str(port_3)}:9000','-e', f'SCREEN_WIDTH={width}','-e', f'SCREEN_HEIGHT={height}','-e', f"URL={url}", 'test3'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     port_1, port_2, port_3 = port_1 + 1, port_2 + 1, port_3 + 1
     return redirect(url_for('loading'))
 

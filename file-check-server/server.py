@@ -79,11 +79,16 @@ def run_sandbox(file_path):
     file_path = os.path.abspath(file_path)
     #print(file_path)
     docker_image = "sandbox"
-    command = ["docker", "run", "--rm", "-v", f"{file_path}:/app/executable", docker_image, "/app/executable"]
+    host_dir = f'/home/shahafnachum/docker_shared/shared'
+    os.makedirs(host_dir, exist_ok=True)
+    command = ["docker", "run", "--rm", "-v", f"{file_path}:/app/executable", docker_image, "/app/executable",'-v', f'{host_dir}:/mnt/shared']
     # docker run --rm -v C:\Users\Ben\OneDrive\מסמכים\GitHub\browser-sandbox\file-check-server\sandbox-docker\a.out:/app/a.out sandbox /app/a.out
     try:
         result = subprocess.check_output(command)
-        #output = result.stdout
+        docker_pid = result.pid
+        file_path = os.path.join(host_dir, f'{docker_pid}.txt')
+        with open(file_path, 'w') as pid_file:
+            pid_file.write(f'Docker process ID: {docker_pid}')
     except Exception as e:
         print("error")
         #output = e.stdout
