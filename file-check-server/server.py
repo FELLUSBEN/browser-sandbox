@@ -79,15 +79,9 @@ def run_sandbox(file_path):
     file_path = os.path.abspath(file_path)
     #print(file_path)
     docker_image = "sandbox"
-<<<<<<< HEAD
     audit_log_path = "/var/log/audit/audit.log"
     container_log_path = "/mnt/audit.log"
     command = ["docker", "run", "--rm", "-v", f"{file_path}:/app/executable", docker_image,'-v', f'{audit_log_path}:{container_log_path}', "/app/executable"]
-=======
-    host_dir = f'/home/raz/docker_shared/shared'
-    os.makedirs(host_dir, exist_ok=True)
-    command = ["docker", "run", "--rm", "-v", f"{file_path}:/app/executable", docker_image,'-v', f'{host_dir}:/mnt/shared', "/app/executable"]
->>>>>>> 1b880d15d152c20f8de73ac1e4b5c686d72ec1f3
     # docker run --rm -v C:\Users\Ben\OneDrive\מסמכים\GitHub\browser-sandbox\file-check-server\sandbox-docker\a.out:/app/a.out sandbox /app/a.out
     try:
         result = subprocess.check_output(command)
