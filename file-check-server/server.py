@@ -110,7 +110,7 @@ def file_checks(filepath):
     }
     if engine.CheckFile(filepath):
         result["is_valid"] = False
-        result["message"] = "malicious"
+        result["message"] = "malicious - critical level"
 
     sandbox_output =  run_sandbox(filepath)
 
