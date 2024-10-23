@@ -56,10 +56,10 @@ def create_sandbox():
     
     if url == "":
     # Run Docker without URL, but with shared folder
-        process = subprocess.Popen(['docker', 'run', '--name', f'{session["user_id"]}','-p', f'{str(port_1)}:5900','-p', f'{str(port_2)}:6080','-p', f'{str(port_3)}:9000','-e', f'SCREEN_WIDTH={width}','-e', f'SCREEN_HEIGHT={height}','test3'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        process = subprocess.Popen(['docker', 'run', '-d', '--name', f'{session["user_id"]}','-p', f'{str(port_1)}:5900','-p', f'{str(port_2)}:6080','-p', f'{str(port_3)}:9000','-e', f'SCREEN_WIDTH={width}','-e', f'SCREEN_HEIGHT={height}','test3'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     else:
     # Run Docker with URL and shared folder
-        process = subprocess.Popen(['docker', 'run', '--name', f'{session["user_id"]}','-p', f'{str(port_1)}:5900','-p', f'{str(port_2)}:6080','-p', f'{str(port_3)}:9000','-e', f'SCREEN_WIDTH={width}','-e', f'SCREEN_HEIGHT={height}','-e', f"URL={url}", 'test3'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        process = subprocess.Popen(['docker', 'run', '-d', '--name', f'{session["user_id"]}','-p', f'{str(port_1)}:5900','-p', f'{str(port_2)}:6080','-p', f'{str(port_3)}:9000','-e', f'SCREEN_WIDTH={width}','-e', f'SCREEN_HEIGHT={height}','-e', f"URL={url}", 'test3'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     port_1, port_2, port_3 = port_1 + 1, port_2 + 1, port_3 + 1
     return redirect(url_for('loading'))
 
