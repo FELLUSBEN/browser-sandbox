@@ -44,6 +44,16 @@ if [ $time_diff -le 29 ]; then
     result="malicious"
 fi
 
+#file_path="/mnt/pid.txt"
+#file_content=""
+#file_path_new_logs="/mnt/newlogs.txt"
+#if [ -f "$file_path" ]; then
+#    file_content=$(cat "$file_path")
+#else
+#    echo "File does not exist."
+#fi
+#ausearch -ts "$(date --date '40 seconds ago' +"%m/%d/%Y")" -ts "$(date --date '40 seconds ago' +"%H:%M:%S")" -pp "$file_content" > "$file_path_new_logs"
+
 for script in "${bash_files[@]}"; do
         output=$("./$script")
 

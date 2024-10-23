@@ -79,16 +79,27 @@ def run_sandbox(file_path):
     file_path = os.path.abspath(file_path)
     #print(file_path)
     docker_image = "sandbox"
+<<<<<<< HEAD
     host_dir = f'/home/raz/docker_shared/shared'
     os.makedirs(host_dir, exist_ok=True)
     command = ["docker", "run", "-d", "--rm", "-v", f"{file_path}:/app/executable", docker_image,'-v', f'{host_dir}:/mnt/shared', "/app/executable"]
+=======
+    audit_log_path = "/var/log/audit/audit.log"
+    container_log_path = "/mnt/audit.log"
+    command = ["docker", "run", "--rm", "-v", f"{file_path}:/app/executable", docker_image,'-v', f'{audit_log_path}:{container_log_path}', "/app/executable"]
+>>>>>>> 40df386bded01ddb5fe4b36d33b14b7ddd0c9c50
     # docker run --rm -v C:\Users\Ben\OneDrive\מסמכים\GitHub\browser-sandbox\file-check-server\sandbox-docker\a.out:/app/a.out sandbox /app/a.out
     try:
         result = subprocess.check_output(command)
+        container_id, _ = result.communicate()
+        container_id = container_id.decode('utf-8').strip()
         docker_pid = result.pid
-        file_path = os.path.join(host_dir, f'{docker_pid}.txt')
-        with open(file_path, 'w') as pid_file:
-            pid_file.write(f'Docker process ID: {docker_pid}')
+        file_path_in_container = f"/mnt/pid.txt"
+        create_file_command = [
+            "docker", "exec", container_id, 
+            "bash", "-c", f'echo "{docker_pid}" > {file_path_in_container}'
+        ]
+        subprocess.run(create_file_command, check=True)
     except Exception as e:
         print("error")
         #output = e.stdout
