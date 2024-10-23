@@ -81,7 +81,7 @@ def run_sandbox(file_path):
     docker_image = "sandbox"
     audit_log_path = "/var/log/audit/audit.log"
     container_log_path = "/mnt/audit.log"
-    command = ["docker", "run", "-d", "--rm", "-v", f"{file_path}:/app/executable", docker_image,'-v', f'{audit_log_path}:{container_log_path}', "/app/executable"]
+    command = ["docker", "run", "-d", "--rm", "-v", f"{file_path}:/app/executable", '-v', f'{audit_log_path}:{container_log_path}', docker_image, "/app/executable"]
     # docker run --rm -v C:\Users\Ben\OneDrive\מסמכים\GitHub\browser-sandbox\file-check-server\sandbox-docker\a.out:/app/a.out sandbox /app/a.out
     try:
         result = subprocess.check_output(command)
