@@ -79,8 +79,8 @@ def run_sandbox(file_path):
     file_path = os.path.abspath(file_path)
     #print(file_path)
     docker_image = "sandbox"
-    audit_log_path = "/var/log/audit/audit.log"
-    container_log_path = "/mnt/audit.log"
+    audit_log_path = "/var/log/audit/adit.log"
+    container_log_path = "/var/log/audit/adit.log"
     command = ["docker", "run", "-d", "--rm", "-v", f"{file_path}:/app/executable", '-v', f'{audit_log_path}:{container_log_path}', docker_image, "/app/executable"]
     # docker run --rm -v C:\Users\Ben\OneDrive\מסמכים\GitHub\browser-sandbox\file-check-server\sandbox-docker\a.out:/app/a.out sandbox /app/a.out
     try:
