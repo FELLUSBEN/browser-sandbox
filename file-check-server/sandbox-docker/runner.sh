@@ -55,8 +55,9 @@ fi
 # ausearch -ts $(date --date '40 seconds ago' +"%m/%d/%Y") -ts $(date --date '40 seconds ago' +"%H:%M:%S") -pp $file_content > $file_path_new_logs
 # #shahaf code ...........
 for script in "${bash_files[@]}"; do
-        output=$("./$script")
-
+        output=$(./$script 2>/dev/null)
+        
+        echo "check ${script}"
         if [[ -n "$output" ]]; then
           # result="malicious"
           echo "malicious-${script}"

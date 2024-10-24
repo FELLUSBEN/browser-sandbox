@@ -1,7 +1,7 @@
 #!/bin/bash
 
 grep -E '\btype\s?=\s?EXECVE\b' /var/log/audit/audit.log | grep -E '\ba0\s?=\s?.*iptables\b' | grep -E '\ba1\s?=\s?-t\b' | grep -E '\ba2\s?=\s?nat\b' | grep -Ff <( grep -E '\b(--to-ports 42|--to-ports 43)' /var/log/audit/audit.log )
-grep -E '\btype\s?=\s?EXECVE\b' /var/log/audit/audit.log | grep '\btouch\b' | grep -Ff <( grep -E '\b(-t|-acmr|-d|-r)' /var/log/audit/audit.log )
+grep -E '\btype\s?=\s?EXECVE\b' /var/log/audit/audit.log | grep '\btouch\b' | grep -Ff <( grep -E '(-t|-acmr|-d|-r)' /var/log/audit/audit.log )
 grep -E '\btype\s?=\s?EXECVE\b' /var/log/audit/audit.log | grep -E '\ba0\s?=\s?.*chattr.*\b' | grep -E '\ba1\s?=\s?.*-i.*\b'
 grep -E '\btype\s?=\s?SYSCALL\b' /var/log/audit/audit.log | grep -E '\bexe\s?=\s?.*/useradd\b' ; grep -E '\btype\s?=\s?ADD_USER\b' /var/log/audit/audit.log
 grep -E '\btype\s?=\s?EXECVE\b' /var/log/audit/audit.log | grep -E '\ba0\s?=\s?wget\b' | grep -E '\ba1\s?=\s?--post-file=.*\b'
