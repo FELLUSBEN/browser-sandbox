@@ -19,13 +19,23 @@ COPY libapilog.so /app/libapilog.so
 
 COPY rules_by_level/low.sh /app/low.sh
 
+RUN chmod +x /app/low.sh
+
 COPY rules_by_level/medium.sh /app/medium.sh
+
+RUN chmod +x /app/medium.sh
 
 COPY rules_by_level/high.sh /app/high.sh
 
+RUN chmod +x /app/high.sh
+
 COPY rules_by_level/critical.sh /app/critical.sh
 
+RUN chmod +x /app/critical.sh
+
 COPY rules_by_level/informational.sh /app/informational.sh
+
+RUN chmod +x /app/informational.sh
 
 COPY malicious_check.py /app/malicious_check.py
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-grep_files=("informational.sh" "low.sh" "meduim.sh" "high.sh" "critical.sh")
+grep_files=("critical.sh" "high.sh" "medium.sh" "low.sh" "informational.sh")
 
 check_malicious() {
     local executable="$1"
@@ -52,13 +52,14 @@ fi
 # else
 #    echo "File does not exist."
 # fi
-# ausearch -ts $(date --date '40 seconds ago' +"%m/%d/%Y") -ts $(date --date '40 seconds ago' +"%H:%M:%S") -pp $file_content > $file_path_new_logs
+ausearch -ts $(date --date '40 seconds ago' +"%m/%d/%Y") -ts $(date --date '40 seconds ago' +"%H:%M:%S") > /var/log/audit/audit.log
 # #shahaf code ...........
 echo "fine for now"
 for script in "${grep_files[@]}"; do
-        output=$(./$script 2>/dev/null)
+        output=$(./$script)
         
         echo "check ${script}"
+        echo "${output}"
         if [[ -n "$output" ]]; then
           # result="malicious"
           echo "malicious-${script}"
